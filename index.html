@@ -1,96 +1,2145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Under Construction</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Michael Kosinski</title>
+<!-- Apple's own typeface (SF Pro) is used automatically on Apple devices.
+     Everywhere else we fall back to Inter, which has a very similar feel. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { margin: 0; padding-top: 4em; background: #fff; color: #000; }
-  pre { font-family: Consolas, Menlo, "DejaVu Sans Mono", "Courier New", monospace; font-size: 14px; line-height: 1.15;
-        width: fit-content; margin: 0 auto; text-align: left; }
-  pre.art { font-size: 11px; line-height: 1.1; font-weight: bold; }
+  /* City-night palette: deep blue-black base, bright but slightly desaturated neon accents. */
+  :root {
+    color-scheme: dark;
+    --bg: #0a0c16;
+    --bg-deep: #07080f;
+    --panel: #141a2e;
+    --panel-line: rgba(255, 255, 255, .06);
+    --text: #e8eaf4;
+    --muted: #8b91aa;
+    --line: rgba(232, 234, 244, .13);
+    --line-solid: #272933; /* --line flattened onto --bg: same look, fully opaque */
+    --cyan: #6fe3e1;
+    --violet: #a596f2;
+    --pink: #f27ec2;
+    --amber: #f7c27a;
+    --red: #ff3d5a;
+    --accent: var(--cyan);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Helvetica Neue", "Segoe UI", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; background: var(--bg); }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.011em;
+    overflow-x: hidden;
+  }
+  ::selection { background: rgba(165, 150, 242, .4); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: fixed; inset: 0 0 auto 0; height: 48px; z-index: 70; /* above balls (60) and the box front (62) */
+    background: rgba(10, 12, 22, .72);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .nav-inner {
+    max-width: 980px; height: 100%; margin: 0 auto; padding: 0 22px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-weight: 600; font-size: 15px; color: var(--text); }
+  .brand:hover { text-decoration: none; }
+  .nav-links a { color: var(--text); opacity: .75; font-size: 12px; margin-left: 26px; }
+  .nav-links a:hover { opacity: 1; text-decoration: none; color: var(--cyan); }
+
+  /* ---------- Layout ---------- */
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
+  section { padding: 96px 0; scroll-margin-top: 48px; }
+  .divider {
+    border: 0; height: 1px; margin: 0 auto;
+    width: calc(100% - 44px); max-width: 936px;
+    background: var(--line);
+  }
+  h2 {
+    font-size: clamp(32px, 4.6vw, 48px); line-height: 1.08;
+    font-weight: 700; letter-spacing: -0.028em; margin: 0 0 40px;
+  }
+  .section-title { text-align: center; }
+  .subhead { font-size: 21px; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 18px; }
+
+  /* ---------- Hero ---------- */
+  /* Full-width hero. Its height leaves a strip of the next section visible on load,
+     so the ledge at its bottom (where the box and starter ball sit) is on screen. */
+  .hero {
+    position: relative; z-index: 1; /* above the next section, so its shadow falls onto it */
+    height: calc(100svh - 64px); min-height: 520px;
+    overflow: hidden; text-align: center;
+    background: var(--bg-deep);
+    /* the hero reads as a solid slab casting a heavy shadow onto the page below */
+    box-shadow: 0 34px 50px -12px rgba(0,0,0,.9), 0 10px 18px rgba(0,0,0,.55);
+  }
+  .hero-media {
+    position: absolute; inset: 0;
+    animation: rise 1.4s cubic-bezier(.2,.7,.2,1) .1s both;
+  }
+  .hero-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* Shading over the photo: darker at the top for the title, and a dark "floor" at the bottom. */
+  .hero-shade {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(7,8,15,.6) 0%, rgba(7,8,15,0) 42%),
+      linear-gradient(0deg, rgba(5,6,12,.85) 0%, rgba(5,6,12,.35) 9%, rgba(5,6,12,0) 24%);
+  }
+  .hero-text { position: relative; padding: clamp(96px, 16vh, 170px) 22px 0; }
+  .hero-kicker {
+    font-size: clamp(20px, 2.4vw, 28px); font-weight: 600; color: rgba(232,234,244,.8); margin: 0;
+    animation: rise-text .9s cubic-bezier(.2,.7,.2,1) .25s both;
+  }
+  .hero h1 {
+    font-size: clamp(48px, 8.4vw, 104px); line-height: 1.02;
+    font-weight: 700; letter-spacing: -0.04em; margin: 4px 0 0;
+    animation: rise-text .9s cubic-bezier(.2,.7,.2,1) .33s both;
+  }
+  .neon-text {
+    background: linear-gradient(90deg, var(--cyan), var(--violet) 50%, var(--pink));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  /* The solid surface at the bottom of the hero. Its top edge is the first platform. */
+  .hero-ledge {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 16px;
+    background: linear-gradient(180deg, #262c4a 0%, #141830 45%, #0b0e1c 100%);
+    border-top: 1px solid rgba(232,234,244,.22);
+    box-shadow: 0 -10px 24px rgba(0,0,0,.55);
+  }
+  .photo-placeholder {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 50% 60% at 70% 20%, rgba(242,126,194,.25), transparent 70%),
+      radial-gradient(ellipse 60% 70% at 20% 30%, rgba(165,150,242,.25), transparent 70%),
+      linear-gradient(180deg, #121633 0%, #1d1840 55%, #2b1c3c 100%);
+  }
+  .photo-placeholder svg { position: absolute; left: 0; bottom: 0; width: 100%; height: 62%; }
+  .photo-placeholder span {
+    position: absolute; top: 64px; right: 22px;
+    font-size: 12px; font-weight: 500; color: rgba(232,234,244,.55);
+    padding: 5px 10px; border-radius: 980px; background: rgba(0,0,0,.25);
+  }
+  /* The photo rises within the fixed frame, so the ledge (and anything on it) never moves. */
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(26px) scale(1.08); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes rise-text {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-kicker, .hero h1, .hero-media { animation: none; }
+  }
+
+  /* ---------- Intro (body text) ---------- */
+  .intro { padding: 88px 0 96px; }
+  .intro p { max-width: 780px; margin: 0 0 22px; font-size: 21px; line-height: 1.55; color: var(--muted); }
+  .intro p.lead {
+    font-size: clamp(27px, 3.4vw, 36px); line-height: 1.28; font-weight: 600;
+    letter-spacing: -0.02em; color: var(--text); margin-bottom: 30px;
+  }
+
+  /* ---------- Projects ---------- */
+  .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .project {
+    display: flex; flex-direction: column; overflow: hidden;
+    background: var(--panel); border: 1px solid var(--panel-line); border-radius: 24px;
+    color: var(--text);
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .project:hover {
+    text-decoration: none; border-color: rgba(111,227,225,.35);
+    box-shadow: 0 12px 40px rgba(111,227,225,.10);
+  }
+  .project .visual { aspect-ratio: 16 / 10; }
+  .project .visual img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .v1 { background: linear-gradient(135deg, var(--cyan), var(--violet)); }
+  .v2 { background: linear-gradient(135deg, var(--pink), var(--amber)); }
+  .v3 { background: linear-gradient(135deg, var(--violet), var(--pink)); }
+  .v4 { background: linear-gradient(135deg, var(--amber), var(--cyan)); }
+  .v5 { background: linear-gradient(135deg, var(--violet), var(--cyan) 70%); }
+  .v6 { background: linear-gradient(135deg, var(--pink), var(--violet)); }
+  .project .meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px 20px; }
+  .project h3 { font-size: 19px; letter-spacing: -0.015em; margin: 0; }
+  .project .gh { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .project:hover .gh { color: var(--cyan); }
+
+  /* ---------- Skills ---------- */
+  .certs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 64px; }
+  .cert {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    background: var(--panel); border: 1px solid var(--panel-line); border-radius: 18px;
+    color: var(--text); transition: border-color .2s;
+  }
+  .cert:hover { text-decoration: none; border-color: rgba(165,150,242,.45); }
+  .cert-badge { flex: none; width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--violet), var(--cyan)); }
+  .cert-name { display: block; font-size: 15px; font-weight: 600; }
+  .cert-issuer { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .cert::after { content: "↗"; margin-left: auto; color: var(--muted); }
+
+  .skills { padding-bottom: 350px; } /* room for the hoop standing on the footer */
+  .skills-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .skill {
+    aspect-ratio: 1 / 1; /* perfect squares */
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    background: var(--panel); border: 1px solid var(--panel-line); border-radius: 22px;
+    padding: 10px; text-align: center;
+  }
+  /* Placeholder until real icons go in: replace the span with an <img> or <svg>. */
+  .skill-icon { width: 42%; max-width: 56px; aspect-ratio: 1 / 1; border-radius: 14px; border: 1.5px dashed rgba(232,234,244,.22); }
+  .skill-icon img, .skill-icon svg { width: 100%; height: 100%; }
+  .skill-name { font-size: 14px; font-weight: 500; }
+
+  /* ---------- Footer + hoop ---------- */
+  footer {
+    position: relative; min-height: 150px;
+    background: var(--bg-deep); border-top: 1px solid var(--line);
+    padding: 36px 22px 40px; text-align: center; color: var(--muted); font-size: 13px;
+  }
+  .foot-contact, .foot-links {
+    list-style: none; padding: 0; display: flex; justify-content: center; flex-wrap: wrap; row-gap: 6px;
+  }
+  .foot-contact li + li::before, .foot-links li + li::before { content: "·"; margin: 0 12px; color: var(--muted); }
+  .foot-contact { margin: 0 0 26px; font-size: 18px; scroll-margin-top: 48px; }
+  .foot-contact a { color: var(--text); }
+  .foot-contact a:hover { color: var(--cyan); text-decoration: none; }
+  .foot-links { margin: 0 0 12px; }
+  .foot-links li + li::before { margin: 0 10px; }
+  .foot-links a { color: var(--text); opacity: .8; }
+  .foot-links a:hover { color: var(--cyan); opacity: 1; }
+  .copyright { margin: 0; }
+
+  .hoop-wrap {
+    position: absolute; top: 0; width: 180px; text-align: right;
+    right: max(16px, calc(50% - 490px));
+  }
+  /* Side-view hoop that stands on the footer's top edge. */
+  #hoop { position: absolute; bottom: 100%; left: 0; width: 180px; height: 247.5px; display: block; overflow: visible; }
+  #net-g { transform-box: fill-box; transform-origin: 50% 0; }
+  #net-g.swish { animation: swish .55s cubic-bezier(.3,.7,.4,1); }
+  @keyframes swish {
+    0% { transform: scale(1, 1); }
+    30% { transform: scale(.86, 1.28); }
+    65% { transform: scale(1.05, .94); }
+    100% { transform: scale(1, 1); }
+  }
+  /* right edge lines up with the hoop base's right edge (x 228 of 240 in the hoop drawing) */
+  .counter { position: relative; display: inline-block; padding-top: 16px; margin-right: calc(180px * 12 / 240); }
+  .count {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .count-label { font-size: 11px; margin-top: 4px; }
+  .pop {
+    position: absolute; right: 100%; top: 12px; margin-right: 6px;
+    font-size: 15px; font-weight: 700; color: var(--pink);
+    text-shadow: 0 0 12px rgba(242,126,194,.6);
+    opacity: 0; pointer-events: none;
+  }
+  .pop.go { animation: pop .9s ease-out; }
+  @keyframes pop {
+    0% { opacity: 0; transform: translateY(8px) scale(.8); }
+    20% { opacity: 1; transform: translateY(0) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-18px) scale(1); }
+  }
+
+  /* ---------- Balls ---------- */
+  /* Positioned in page coordinates, so they scroll with the page. Color is set by the script. */
+  .ball {
+    position: absolute; left: 0; top: 0; z-index: 60;
+    border-radius: 50%;
+    cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+    will-change: transform;
+  }
+  .ball.grabbing { cursor: grabbing; }
+  /* Removal: the script adds the shrink to the ball's transform (see removeBall). */
+  .ball.into-box, .ball.fade-out { opacity: 0; transition: opacity .25s, transform .25s ease-in; }
+
+  /* ---------- Cardboard box (sits on the first platform) ---------- */
+  /* No z-index/transform on .box itself, so its layers can sit behind (back flap)
+     and in front of (front face) the balls. */
+  .box { position: absolute; left: 0; top: 0; width: 124px; height: 84px; visibility: hidden; }
+  .box > * { position: absolute; left: 0; top: 0; width: 124px; height: 84px; overflow: visible; transform-origin: 50% 100%; }
+  .box-back { z-index: 4; pointer-events: none; }
+  .box-peek { z-index: 5; pointer-events: none; }
+  .box-front { z-index: 62; pointer-events: none; }
+  .box.thunk > * { animation: thunk .32s ease-out; }
+  @keyframes thunk {
+    0% { transform: scale(1, 1); }
+    35% { transform: scale(1.05, .92); }
+    70% { transform: scale(.98, 1.03); }
+    100% { transform: scale(1, 1); }
+  }
+  .peek {
+    position: absolute; border-radius: 50%; pointer-events: auto;
+    cursor: grab; touch-action: none;
+    transition: translate .45s cubic-bezier(.3, 1.5, .5, 1);
+  }
+  .peek.hidden { translate: 0 130%; transition: translate .2s ease-in; }
+
+  #debug { position: fixed; inset: 0; z-index: 55; pointer-events: none; }
+
+  /* ---------- Moon divider (bottom of the intro) ---------- */
+  /* The moon crash-landed here: it's sunk into the divider, which is cracked around it. */
+  /* One element holds the line, the cracks and the rocks, so they all share one color, one
+     length (clipped to the line's own ends) and one shake. */
+  .moon-divider {
+    position: relative; height: 1px; margin: 0 auto;
+    width: calc(100% - 44px); max-width: 936px;
+    background: var(--line-solid);
+    --moon-size: 110px;
+    clip-path: inset(-60px 0); /* cut off at the line's ends; room above/below for cracks and rocks */
+  }
+  .moon-divider.impact { animation: crack-shake .5s cubic-bezier(.3,.7,.4,1); }
+  /* Cracks, centered on the impact point (one moon-width in from the right end). */
+  .moon-crack {
+    position: absolute; top: -35px; width: 440px; height: 70px; pointer-events: none;
+    left: calc(100% - var(--moon-size) - 220px);
+  }
+  .moon-crack path { stroke: var(--line-solid); }
+  /* Moon rocks around the impact. They float up when gravity switches off. */
+  .moon-rock {
+    position: absolute; top: calc(-1 * var(--s)); width: var(--s); height: var(--s);
+    left: calc(100% - var(--moon-size) + var(--x) - var(--s) / 2);
+    transition: transform 1.1s cubic-bezier(.25,.8,.3,1) var(--d);
+  }
+  .moon-rock i {
+    position: absolute; inset: 0; display: block;
+    background: linear-gradient(145deg, #e2e4ee 0%, #a9aebf 55%, #6f7488 100%);
+    clip-path: polygon(18% 8%, 62% 0, 96% 30%, 100% 72%, 70% 100%, 22% 94%, 0 58%);
+    transform: rotate(var(--r));
+  }
+  .moon-divider.weightless .moon-rock { transform: translateY(var(--lift)); }
+  .moon-divider.weightless .moon-rock i { animation: rock-bob 3.2s ease-in-out var(--d) infinite alternate; }
+  @keyframes rock-bob {
+    from { transform: translateY(0) rotate(var(--r)); }
+    to   { transform: translateY(-6px) rotate(calc(var(--r) + 25deg)); }
+  }
+  @keyframes crack-shake {
+    0% { transform: translate(0, 0); }
+    15% { transform: translate(-4px, 3px); }
+    30% { transform: translate(5px, -2px); }
+    45% { transform: translate(-3px, 2px); }
+    60% { transform: translate(2px, -1px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  /* The moon itself lives at page level; the script positions it (crashed, rising, in the sky, falling). */
+  .moon {
+    position: absolute; left: 0; top: 0; z-index: 58;
+    width: 110px; height: 110px; padding: 0; border: 0; background: none; cursor: pointer;
+    will-change: transform; -webkit-tap-highlight-color: transparent;
+  }
+  /* In the sky it sits behind the page content, so it never covers text. */
+  .moon.up { z-index: -1; }
+  body.over-moon, body.over-moon * { cursor: pointer !important; }
+  .moon:focus-visible { outline: 2px solid var(--cyan); outline-offset: 8px; border-radius: 50%; }
+  .moon-body { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .moon-glow {
+    position: absolute; inset: -45%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(236,240,255,.42) 0%, rgba(205,212,255,.16) 36%, rgba(165,150,242,0) 68%);
+    animation: moon-glow 3s ease-in-out infinite;
+  }
+  .moon.night .moon-glow { inset: -75%; animation-duration: 2.2s; }
+  @keyframes moon-glow {
+    0%, 100% { opacity: .7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  /* little four-point glints that twinkle around the moon */
+  .moon-sparkle {
+    position: absolute; width: 16px; height: 16px; color: #fff; pointer-events: none;
+    opacity: 0; animation: sparkle 2.6s ease-in-out infinite;
+  }
+  .moon-sparkle svg { display: block; width: 100%; height: 100%; }
+  .moon-sparkle:nth-child(3) { left: -10%; top: 6%; animation-delay: 0s; }
+  .moon-sparkle:nth-child(4) { left: 86%; top: -8%; width: 11px; height: 11px; animation-delay: .9s; }
+  .moon-sparkle:nth-child(5) { left: 98%; top: 46%; width: 9px; height: 9px; animation-delay: 1.7s; }
+  .moon-sparkle:nth-child(6) { left: 30%; top: -14%; width: 8px; height: 8px; animation-delay: 1.3s; }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+    40% { opacity: 1; transform: scale(1) rotate(45deg); }
+    60% { opacity: .7; transform: scale(.85) rotate(60deg); }
+  }
+
+  /* Night sky: replaces the page background in night mode (behind all content, never over it). */
+  .night-sky {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none; overflow: hidden;
+    background: linear-gradient(180deg, #0b0c22 0%, #110f2b 55%, #170f2c 100%);
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  .night-sky.on { opacity: 1; }
+  .night-sky .nebula {
+    position: absolute; inset: -15%;
+    background:
+      radial-gradient(ellipse 42% 32% at 22% 28%, rgba(165,150,242,.22), transparent 70%),
+      radial-gradient(ellipse 38% 28% at 78% 36%, rgba(242,126,194,.15), transparent 70%),
+      radial-gradient(ellipse 55% 32% at 55% 84%, rgba(111,227,225,.11), transparent 70%),
+      radial-gradient(ellipse 28% 24% at 92% 78%, rgba(165,150,242,.14), transparent 70%);
+    animation: nebula-drift 50s ease-in-out infinite alternate;
+  }
+  @keyframes nebula-drift {
+    from { transform: translate3d(-2%, -1%, 0) scale(1); }
+    to   { transform: translate3d(2%, 1.5%, 0) scale(1.06); }
+  }
+  .night-sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .night-sky .stars-0 { animation: twinkle 2.6s ease-in-out infinite alternate; }
+  .night-sky .stars-1 { animation: twinkle 3.7s ease-in-out -1.3s infinite alternate; }
+  .night-sky .stars-2 { animation: twinkle 1.8s ease-in-out -.7s infinite alternate; }
+  @keyframes twinkle { from { opacity: .2; } to { opacity: 1; } }
+  .shooting-star {
+    position: absolute; width: 150px; height: 1.5px; border-radius: 2px; opacity: 0;
+    background: linear-gradient(90deg, rgba(232,234,244,.95), rgba(232,234,244,0));
+  }
+  .shooting-star.go { animation: shoot .9s ease-out; }
+  @keyframes shoot {
+    0%   { opacity: 0; transform: rotate(-35deg) translateX(0); }
+    15%  { opacity: 1; }
+    100% { opacity: 0; transform: rotate(-35deg) translateX(-440px); }
+  }
+  /* Flick aim, rope, pulse rings and moon dust (above balls). */
+  #fx { position: fixed; inset: 0; z-index: 61; pointer-events: none; }
+
+  /* ---------- Toolbox (how the mouse interacts with balls) ---------- */
+  .toolbox {
+    position: fixed; left: 16px; top: 50%; transform: translateY(-50%); z-index: 75;
+    display: flex; flex-direction: column; gap: 4px; padding: 6px;
+    background: rgba(20, 26, 46, .82);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.45);
+  }
+  .toolbox button {
+    position: relative; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 10px;
+    display: grid; place-items: center; cursor: pointer;
+    background: none; color: var(--text);
+  }
+  .toolbox button svg { width: 20px; height: 20px; }
+  .toolbox button:hover { background: rgba(255,255,255,.08); }
+  .toolbox button.on { background: var(--cyan); color: var(--bg); }
+  .toolbox button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  /* tooltip */
+  .toolbox button::after {
+    content: attr(data-label); position: absolute; left: calc(100% + 12px); top: 50%;
+    transform: translateY(-50%); white-space: nowrap; pointer-events: none;
+    font: 500 12px var(--font); color: var(--text);
+    padding: 6px 10px; border-radius: 8px; background: rgba(20, 26, 46, .95);
+    border: 1px solid rgba(255,255,255,.1);
+    opacity: 0; transition: opacity .15s;
+  }
+  .toolbox button:hover::after, .toolbox button:focus-visible::after { opacity: 1; }
+
+  body.tool-flick .ball, body.tool-flick .peek { cursor: crosshair; }
+  body.tool-pulse, body.tool-pulse .ball, body.tool-magnet, body.tool-magnet .ball,
+  body.tool-gust, body.tool-gust .ball { cursor: crosshair; }
+  body.tool-magnet, body.tool-gust { -webkit-user-select: none; user-select: none; }
+  body.tool-sling .ball, body.tool-sling .peek { cursor: pointer; }
+
+  /* ---------- Ball lab (playground controls) ---------- */
+  .lab {
+    position: fixed; left: 16px; bottom: 16px; z-index: 80; width: 270px;
+    font: 12px var(--font); color: var(--text);
+    background: rgba(20, 26, 46, .82);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255,255,255,.1); border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.45);
+    overflow: hidden;
+  }
+  .lab-toggle {
+    width: 100%; border: 0; background: none; font: 600 12px var(--font); color: var(--text);
+    padding: 10px 14px; text-align: left; cursor: pointer; display: flex; justify-content: space-between;
+  }
+  .lab-toggle::after { content: "＋"; color: var(--muted); }
+  .lab.open .lab-toggle::after { content: "－"; }
+  .lab-body { display: none; padding: 0 14px 14px; }
+  .lab.open .lab-body { display: block; }
+  .lab label { display: block; margin: 10px 0 2px; }
+  .lab label span { float: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .lab input[type=range] { width: 100%; accent-color: var(--cyan); margin: 0; }
+  .lab-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .lab-buttons button {
+    font: 500 11px var(--font); border: 0; border-radius: 980px; padding: 6px 10px; cursor: pointer;
+    background: rgba(255,255,255,.08); color: var(--text);
+  }
+  .lab-buttons button:hover { background: rgba(255,255,255,.14); }
+  .lab-buttons button.on { background: var(--cyan); color: var(--bg); }
+  .lab-note { color: var(--muted); margin: 12px 0 0; line-height: 1.4; }
+
+  @media (max-width: 900px) {
+    .projects-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .nav-links a { margin-left: 16px; }
+    .lab { width: calc(100% - 32px); }
+    .moon { width: 84px; height: 84px; }
+    .moon-divider { --moon-size: 84px; }
+    .toolbox { left: 8px; padding: 4px; }
+    .toolbox button { width: 34px; height: 34px; }
+    .toolbox button svg { width: 18px; height: 18px; }
+    .hero-photo { border-radius: 20px; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    footer { text-align: left; padding-right: 206px; }
+    .foot-contact, .foot-links { justify-content: flex-start; }
+  }
 </style>
 </head>
 <body>
-<pre class="art">
-                         ▲
-            ┌────┐   ▄▄▄▄▄▄▄▄▄
-            │(▒▒)│   █▀▀▀▀▀▀▀█
- ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
- ║╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲╱╲║
- ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-   ┌──┬──┬──┐         ╞═════╡                                       ▐▀▀▀▀▌
-   │▓▓│▓▓│▓▓│  ┌─────┐║╲   ╱║                                        │  │
-   └──┴──┴──┘  │▒▒▒▒▒│║ ╲ ╱ ║                                        │  │
-               └─────┘║  ╳  ║            v                           │  │
-                      ║ ╱ ╲ ║         v                              │  │
-                      ║╱   ╲║                v                       │  │
-                      ╟─────╢                                        │  │
-                      ║╲   ╱║                                        │  │
-                      ║ ╲ ╱ ║                                        │  │
-                      ║  ╳  ║                                       ┌┴──┴┐
-                      ║ ╱ ╲ ║                                       │▓▓▓▓│
-                      ║╱   ╲║                                       └─┬┬─┘
-                      ╟─────╢                                         ╰╯
-                      ║╲   ╱║                                        ╱  ╲
-                      ║ ╲ ╱ ║                                       ╱    ╲
-                      ║  ╳  ║                           ▄          ╱      ╲
-                      ║ ╱ ╲ ║                         \o/     ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-                      ║╱   ╲║                          |      ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-                      ╟─────╢                         / \
-                      ║╲   ╱║                       ╔═════╦═════╦═════╦═════╦═════╦═════╗
-                      ║ ╲ ╱ ║                       ║     ║     ║     ║     ║     ║╲   ╱║
-                      ║  ╳  ║                       ║     ║     ║     ║     ║     ║  ╳  ║
-                      ║ ╱ ╲ ║                       ║     ║     ║     ║     ║     ║╱   ╲║
-                      ║╱   ╲║                       ╠═════╬═════╬═════╬═════╬═════╬═════╬═════╦═════╦═════╗
-                      ╟─────╢                       ║╲   ╱║     ║     ║     ║╲   ╱║     ║     ║ o *·║     ║
-                      ║╲   ╱║                       ║  ╳  ║     ║     ║     ║  ╳  ║     ║     ║/|=* ║     ║
-                      ║ ╲ ╱ ║                       ║╱   ╲║     ║     ║     ║╱   ╲║     ║     ║/ \ ·║     ║
-                      ║  ╳  ║                       ╠═════╬═════╬═════╬═════╬═════╬═════╬═════╬═════╬═════╣
-                      ║ ╱ ╲ ║                       ║▐░░░▌║▐▓▓▓▌║▐░░░▌║▐░░░▌║▐▓▓▓▌║▐░░░▌║▐░░░▌║▐▓▓▓▌║▐░░░▌║
-                      ║╱   ╲║                       ╟─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╢
-                      ╟─────╢                       ║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║
-                      ║╲   ╱║                       ╟─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╢
-                      ║ ╲ ╱ ║                       ║▐░░░▌║▐▓▓▓▌║▐░░░▌║▐░░░▌║▐▓▓▓▌║▐░░░▌║▐░░░▌║▐▓▓▓▌║▐░░░▌║
-                      ║  ╳  ║                       ╟─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╢
-                      ║ ╱ ╲ ║        ╱▀▀▀▀▀▀▀▀▀▀╲   ║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║▐▓▓▓▌║▐░░░▌║▐▓▓▓▌║
-   ▄     ▄            ║╱   ╲║    ┌──┐▐▓░▓░▓░▓░▓░▌   ╟─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╫─────╢
-   o/    o            ╟─────╢    │▒▒│╲▄▄▄▄▄▄▄▄▄▄╱   ║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║┌───┐║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║
-  /|    /|──▐▓▓▌      ║╲   ╱║   ▐████████████████▌  ║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║│▓│▓│║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║  ▲   ▲
-  / \   / \  O      ▐█████████▌  (O)       (O)(O)   ║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║│▓│▓│║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║▒▒▒▒▒║ ▄█▄ ▄█▄
-▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
-░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░░▓░▒░░░▒▓░░▒░░▒░
-▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓▒░▒▒░▓▒▒░▒░▓▒▒░▓
-</pre>
-<br>
-<pre class="art">
-╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║■ ▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓ ■║▒
-║ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ║▒
-║ ┃                                                                                                            ┃ ║▒
-║ ┃                                ██╗   ██╗███╗   ██╗██████╗ ███████╗██████╗                                  ┃ ║▒
-║ ┃                                ██║   ██║████╗  ██║██╔══██╗██╔════╝██╔══██╗                                 ┃ ║▒
-║ ┃                                ██║   ██║██╔██╗ ██║██║  ██║█████╗  ██████╔╝                                 ┃ ║▒
-║ ┃                                ██║   ██║██║╚██╗██║██║  ██║██╔══╝  ██╔══██╗                                 ┃ ║▒
-║ ┃                                ╚██████╔╝██║ ╚████║██████╔╝███████╗██║  ██║                                 ┃ ║▒
-║ ┃                                 ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚══════╝╚═╝  ╚═╝                                 ┃ ║▒
-║ ┃                                                                                                            ┃ ║▒
-║ ┃     ██████╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗ ██╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ┃ ║▒
-║ ┃    ██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ┃ ║▒
-║ ┃    ██║     ██║   ██║██╔██╗ ██║███████╗   ██║   ██████╔╝██║   ██║██║        ██║   ██║██║   ██║██╔██╗ ██║    ┃ ║▒
-║ ┃    ██║     ██║   ██║██║╚██╗██║╚════██║   ██║   ██╔══██╗██║   ██║██║        ██║   ██║██║   ██║██║╚██╗██║    ┃ ║▒
-║ ┃    ╚██████╗╚██████╔╝██║ ╚████║███████║   ██║   ██║  ██║╚██████╔╝╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ┃ ║▒
-║ ┃     ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ┃ ║▒
-║ ┃                                                                                                            ┃ ║▒
-║ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ║▒
-║■ ▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓░░░░▓▓▓▓ ■║▒
-╚═════════════╦═══╦════════════════════════════════════════════════════════════════════════════╦═══╦═════════════╝▒
-  ▒▒▒▒▒▒▒▒▒▒▒▒║███║▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒║███║▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-              ║███║                                                                            ║███║
-              ║███║                                                                            ║███║
-              ║███║                                                                            ║███║
-              ║███║                                                                            ║███║
-            ▄▄█████▄▄                                                                        ▄▄█████▄▄
-           ▀▀▀▀▀▀▀▀▀▀▀                                                                      ▀▀▀▀▀▀▀▀▀▀▀
-</pre>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">Michael Kosinski</a>
+    <div class="nav-links">
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Any element with data-platform is a surface the balls can land on (top edge only).
+     data-platform-inset="N" trims N px off each end (useful for rounded corners).
+     The FIRST data-platform on the page is where the box of balls sits and the starter ball lands.
+     The footer's top edge is always the ground. -->
+
+<header class="hero" id="top">
+  <div class="hero-media">
+    <!-- Placeholder. Swap this .photo-placeholder div for: <img src="hero.jpg" alt="Describe the photo"> -->
+    <div class="photo-placeholder">
+      <svg viewBox="0 0 1200 400" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="#0b0d1c">
+          <rect x="0" y="210" width="90" height="190"/><rect x="80" y="150" width="70" height="250"/>
+          <rect x="160" y="240" width="110" height="160"/><rect x="255" y="90" width="80" height="310"/>
+          <rect x="345" y="190" width="120" height="210"/><rect x="470" y="130" width="70" height="270"/>
+          <rect x="545" y="230" width="100" height="170"/><rect x="650" y="60" width="90" height="340"/>
+          <rect x="745" y="170" width="120" height="230"/><rect x="870" y="110" width="75" height="290"/>
+          <rect x="950" y="220" width="110" height="180"/><rect x="1065" y="140" width="135" height="260"/>
+        </g>
+        <g fill="#f7c27a" opacity=".55">
+          <rect x="270" y="120" width="8" height="6"/><rect x="300" y="160" width="8" height="6"/><rect x="285" y="220" width="8" height="6"/>
+          <rect x="670" y="100" width="8" height="6"/><rect x="700" y="150" width="8" height="6"/><rect x="680" y="240" width="8" height="6"/>
+          <rect x="890" y="140" width="8" height="6"/><rect x="915" y="200" width="8" height="6"/><rect x="1090" y="180" width="8" height="6"/>
+        </g>
+        <g fill="#6fe3e1" opacity=".5">
+          <rect x="100" y="190" width="8" height="6"/><rect x="490" y="170" width="8" height="6"/><rect x="510" y="230" width="8" height="6"/>
+          <rect x="770" y="210" width="8" height="6"/><rect x="820" y="260" width="8" height="6"/><rect x="1130" y="230" width="8" height="6"/>
+        </g>
+        <g fill="#f27ec2" opacity=".5">
+          <rect x="370" y="230" width="8" height="6"/><rect x="420" y="280" width="8" height="6"/><rect x="980" y="260" width="8" height="6"/>
+        </g>
+      </svg>
+      <span>Hero photo placeholder</span>
+    </div>
+  </div>
+  <div class="hero-shade"></div>
+  <div class="hero-text">
+    <p class="hero-kicker">Hello, I'm</p>
+    <h1><span class="neon-text">Michael Kosinski</span></h1>
+  </div>
+  <!-- The box of balls and the starter ball sit on this ledge (the page's first platform). -->
+  <div class="hero-ledge" data-platform></div>
+</header>
+
+<section class="intro" id="about">
+  <div class="wrap">
+    <p class="lead">Lead paragraph placeholder. One or two confident sentences about who you are and what you do.</p>
+    <p>Second paragraph placeholder. More detail about your background, interests, or the kind of work you enjoy. Replace this text later.</p>
+    <p>Third paragraph placeholder. What you're working on now, what you're looking for, or anything else you'd like visitors to know.</p>
+  </div>
+</section>
+
+<!-- Bottom of the intro: the moon crash-landed here and cracked the divider.
+     The moon itself (#moon, further down) is positioned onto this spot by the script. -->
+<div class="moon-divider" id="moon-divider" data-platform>
+  <svg class="moon-crack" viewBox="0 0 440 70" aria-hidden="true">
+    <path fill="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      d="M220 35 L196 36 L180 33 L158 37 L136 34 L112 36 L86 35 L58 36.5 L30 35 L4 35.5
+         M180 33 L172 25 L163 21 M158 37 L150 45 L141 50 M112 36 L105 29
+         M220 35 L246 34 L262 38 L288 34 L310 36 L338 35 L372 36 L406 35 L436 35.5
+         M262 38 L270 47 L279 52 M288 34 L297 26 L306 22 M338 35 L345 42
+         M200 38 L194 47 L190 55 M240 38 L247 48"/>
+  </svg>
+  <!-- moon rocks: --x is the offset from the moon's center, --lift how high it floats -->
+  <span class="moon-rock" style="--x:-122px; --s:6px;  --r:20deg;  --lift:-14px; --d:.05s"><i></i></span>
+  <span class="moon-rock" style="--x:-96px;  --s:11px; --r:-15deg; --lift:-22px; --d:0s"><i></i></span>
+  <span class="moon-rock" style="--x:-74px;  --s:7px;  --r:40deg;  --lift:-30px; --d:.18s"><i></i></span>
+  <span class="moon-rock" style="--x:70px;   --s:9px;  --r:-30deg; --lift:-26px; --d:.1s"><i></i></span>
+  <span class="moon-rock" style="--x:92px;   --s:6px;  --r:10deg;  --lift:-17px; --d:.25s"><i></i></span>
+</div>
+
+<section id="projects">
+  <div class="wrap">
+    <h2 class="section-title">Projects</h2>
+    <!-- Each card links to its GitHub repo. Swap the .visual div's content for an <img> when ready. -->
+    <div class="projects-grid">
+      <a class="project" href="https://github.com/xeninterloper/project-one" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v1"></div>
+        <div class="meta"><h3>Project One</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+      <a class="project" href="https://github.com/xeninterloper/project-two" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v2"></div>
+        <div class="meta"><h3>Project Two</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+      <a class="project" href="https://github.com/xeninterloper/project-three" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v3"></div>
+        <div class="meta"><h3>Project Three</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+      <a class="project" href="https://github.com/xeninterloper/project-four" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v4"></div>
+        <div class="meta"><h3>Project Four</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+      <a class="project" href="https://github.com/xeninterloper/project-five" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v5"></div>
+        <div class="meta"><h3>Project Five</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+      <a class="project" href="https://github.com/xeninterloper/project-six" target="_blank" rel="noopener" data-platform data-platform-inset="14">
+        <div class="visual v6"></div>
+        <div class="meta"><h3>Project Six</h3><span class="gh">GitHub ↗</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="skills" id="skills">
+  <div class="wrap">
+    <h2 class="section-title">Skills</h2>
+
+    <h3 class="subhead">Certifications</h3>
+    <div class="certs">
+      <a class="cert" href="#" target="_blank" rel="noopener">
+        <span class="cert-badge"></span>
+        <span><span class="cert-name">Certification Name</span><span class="cert-issuer">Issuing Organization · 2026</span></span>
+      </a>
+      <a class="cert" href="#" target="_blank" rel="noopener">
+        <span class="cert-badge"></span>
+        <span><span class="cert-name">Certification Name</span><span class="cert-issuer">Issuing Organization · 2025</span></span>
+      </a>
+      <a class="cert" href="#" target="_blank" rel="noopener">
+        <span class="cert-badge"></span>
+        <span><span class="cert-name">Certification Name</span><span class="cert-issuer">Issuing Organization · 2024</span></span>
+      </a>
+    </div>
+
+    <h3 class="subhead">Technical skills</h3>
+    <div class="skills-grid">
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+      <div class="skill" data-platform data-platform-inset="12"><span class="skill-icon"></span><span class="skill-name">Skill</span></div>
+    </div>
+  </div>
+</section>
+
+<footer id="footer">
+  <!-- Level 1: contact -->
+  <ul class="foot-contact" id="contact">
+    <li><a href="mailto:you@example.com">you@example.com</a></li>
+    <li><a href="tel:+15555550123">(555) 555-0123</a></li>
+    <li><a href="https://github.com/xeninterloper" target="_blank" rel="noopener">GitHub</a></li>
+    <li><a href="https://www.linkedin.com/in/your-profile" target="_blank" rel="noopener">LinkedIn</a></li>
+  </ul>
+  <!-- Level 2: site options -->
+  <ul class="foot-links">
+    <li><a href="#top" id="back-to-top">Back to top</a></li>
+    <li><a id="destroy-link" href="#" target="_blank" rel="noopener">Destroy my website</a></li>
+  </ul>
+  <p class="copyright">© 2026 Michael Kosinski. All rights reserved.</p>
+
+  <div class="hoop-wrap">
+    <!-- Drawn in a 240×330 coordinate space; the script scales HOOP geometry to the rendered size.
+         Only the backboard and rim collide with the ball. -->
+    <svg id="hoop" viewBox="0 0 240 330" aria-hidden="true">
+      <rect x="184" y="320" width="44" height="10" rx="3" fill="#2a2f48"/>
+      <rect x="200" y="70" width="12" height="254" rx="3" fill="#3b4160"/>
+      <rect x="176" y="80" width="28" height="8" rx="2" fill="#3b4160"/>
+      <path d="M180 112 L204 90" stroke="#3b4160" stroke-width="5" stroke-linecap="round"/>
+      <rect x="166" y="8" width="12" height="128" rx="3" fill="#1a2038" stroke="#c9cde0" stroke-width="3"/>
+      <rect x="170" y="58" width="4" height="54" rx="1" fill="#f27ec2"/>
+      <g id="net-g">
+        <path id="net" fill="none" stroke="#8b91aa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <line x1="72" y1="112" x2="168" y2="112" stroke="#ffa86b" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    <div class="counter">
+      <div class="count" id="basket-count">0</div>
+      <div class="count-label">baskets made by visitors</div>
+      <div class="pop" id="pop">+1</div>
+    </div>
+  </div>
+</footer>
+
+<!-- Balls are created by the script. -->
+
+<!-- Cardboard box of balls. The script places it on the first [data-platform]. -->
+<div class="box" id="box" aria-label="A box of balls you can pull out" role="img">
+  <svg class="box-back" viewBox="0 0 124 84" aria-hidden="true">
+    <ellipse cx="62" cy="83" rx="74" ry="7" fill="#000" opacity=".55"/>
+    <polygon points="6,2 118,2 110,-26 14,-26" fill="#8c6439" stroke="#6b4a29" stroke-width="2" stroke-linejoin="round"/>
+  </svg>
+  <div class="box-peek" id="box-peek"></div>
+  <svg class="box-front" id="box-front" viewBox="0 0 124 84" aria-hidden="true">
+    <polygon points="1,2 -18,-20 -8,-24 12,0" fill="#b98a55" stroke="#7a5532" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="123,2 142,-20 132,-24 112,0" fill="#b98a55" stroke="#7a5532" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="1" y="1" width="122" height="82" rx="3" fill="#c99a62" stroke="#7a5532" stroke-width="2"/>
+    <rect x="2" y="2" width="120" height="7" fill="#b4864f"/>
+    <rect x="50" y="2" width="24" height="34" fill="#e2c48f" opacity=".75"/>
+    <path d="M14 62 h24 M14 69 h15" stroke="#7a5532" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>
+  </svg>
+</div>
+
+<!-- The moon. Click it to pull it out of the divider (night mode); click it in the sky to drop it back. -->
+<button class="moon" id="moon" type="button" aria-pressed="false" aria-label="Pull the moon out: starry sky and zero gravity">
+  <span class="moon-glow"></span>
+  <svg class="moon-body" viewBox="0 0 100 100" aria-hidden="true">
+    <defs>
+      <radialGradient id="moon-shade" cx="38%" cy="34%" r="72%">
+        <stop offset="0" stop-color="#ffffff"/><stop offset=".62" stop-color="#eef0f7"/><stop offset="1" stop-color="#c6cad8"/>
+      </radialGradient>
+      <mask id="moon-crescent">
+        <circle cx="50" cy="50" r="49" fill="#fff"/>
+        <circle cx="76" cy="34" r="40" fill="#000"/>
+      </mask>
+    </defs>
+    <g mask="url(#moon-crescent)">
+    <circle cx="50" cy="50" r="49" fill="url(#moon-shade)"/>
+    <!-- maria (the darker "seas") -->
+    <g fill="#aeb3c4" opacity=".42">
+      <path d="M20 31c6-9 19-10 25-3s2 16-7 18-21-7-18-15z"/>
+      <path d="M54 56c8-6 20-2 22 6s-6 16-15 14-14-14-7-20z"/>
+      <path d="M29 63c4-3 11-1 11 4s-5 9-10 7-4-8-1-11z"/>
+      <path d="M60 22c4-3 10-2 11 2s-3 7-7 7-7-6-4-9z"/>
+    </g>
+    <!-- craters: shadowed bowl, lighter floor, bright rim -->
+    <g>
+      <circle cx="68" cy="27" r="7" fill="#b9bdcd"/><circle cx="69.2" cy="28.2" r="5.6" fill="#d6d9e4"/><circle cx="68" cy="27" r="7" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".9"/>
+      <circle cx="40" cy="47" r="5" fill="#b9bdcd"/><circle cx="40.9" cy="47.9" r="4" fill="#d6d9e4"/><circle cx="40" cy="47" r="5" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".8"/>
+      <circle cx="78" cy="45" r="4" fill="#b9bdcd"/><circle cx="78.7" cy="45.7" r="3.2" fill="#d6d9e4"/><circle cx="78" cy="45" r="4" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".7"/>
+      <circle cx="57" cy="79" r="6" fill="#b9bdcd"/><circle cx="58" cy="80" r="4.8" fill="#d6d9e4"/><circle cx="57" cy="79" r="6" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".8"/>
+      <circle cx="24" cy="50" r="3.5" fill="#b9bdcd"/><circle cx="24.6" cy="50.6" r="2.8" fill="#d6d9e4"/>
+      <circle cx="47" cy="17" r="3" fill="#b9bdcd"/><circle cx="47.5" cy="17.5" r="2.3" fill="#d6d9e4"/>
+      <circle cx="82" cy="66" r="3" fill="#b9bdcd"/><circle cx="82.5" cy="66.5" r="2.3" fill="#d6d9e4"/>
+      <circle cx="34" cy="81" r="3.5" fill="#b9bdcd"/><circle cx="34.6" cy="81.6" r="2.7" fill="#d6d9e4"/>
+      <circle cx="62" cy="41" r="2.5" fill="#b9bdcd"/><circle cx="62.4" cy="41.4" r="1.9" fill="#d6d9e4"/>
+      <circle cx="16" cy="36" r="2" fill="#b9bdcd"/>
+      <circle cx="72" cy="57" r="1.8" fill="#b9bdcd"/>
+      <circle cx="28" cy="66" r="4.5" fill="#b9bdcd"/><circle cx="28.8" cy="66.8" r="3.6" fill="#d6d9e4"/><circle cx="28" cy="66" r="4.5" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".7"/>
+      <circle cx="44" cy="90" r="2.5" fill="#b9bdcd"/>
+    </g>
+    </g>
+  </svg>
+  <span class="moon-sparkle"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C13 9 15 11 24 12C15 13 13 15 12 24C11 15 9 13 0 12C9 11 11 9 12 0Z"/></svg></span>
+  <span class="moon-sparkle"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C13 9 15 11 24 12C15 13 13 15 12 24C11 15 9 13 0 12C9 11 11 9 12 0Z"/></svg></span>
+  <span class="moon-sparkle"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C13 9 15 11 24 12C15 13 13 15 12 24C11 15 9 13 0 12C9 11 11 9 12 0Z"/></svg></span>
+  <span class="moon-sparkle"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 0C13 9 15 11 24 12C15 13 13 15 12 24C11 15 9 13 0 12C9 11 11 9 12 0Z"/></svg></span>
+</button>
+
+<canvas id="debug"></canvas>
+<!-- Night sky (page background in night mode). Stars are painted by the script. -->
+<div class="night-sky" id="night-sky" hidden aria-hidden="true">
+  <div class="nebula"></div>
+  <canvas class="stars-0"></canvas><canvas class="stars-1"></canvas><canvas class="stars-2"></canvas>
+  <div class="shooting-star"></div>
+</div>
+<canvas id="fx"></canvas>
+
+<!-- Toolbox: how the mouse plays with the balls. Keys 1–6 switch tools too. -->
+<div class="toolbox" role="toolbar" aria-label="Ball tools">
+  <button type="button" class="on" data-tool="grab" data-label="Grab" aria-label="Grab" aria-pressed="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-8a1.5 1.5 0 0 1 3 0v8"/>
+      <path d="M14 11.5V5.5a1.5 1.5 0 0 1 3 0v6.5"/>
+      <path d="M17 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-1.2a6 6 0 0 1-4.9-2.6l-2.8-4a1.5 1.5 0 0 1 2.4-1.8L8 14.5"/>
+    </svg>
+  </button>
+  <button type="button" data-tool="flick" data-label="Flick" aria-label="Flick" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 20 15 9"/><path d="M10 9h5v5"/><circle cx="19" cy="5" r="2.5"/><path d="M3 13l3-3"/><path d="M11 21l3-3"/>
+    </svg>
+  </button>
+  <button type="button" data-tool="sling" data-label="Sling" aria-label="Sling" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="6" cy="3.5" r="1.6" fill="currentColor"/><path d="M6.5 5c1 4 6 4 6.5 9"/><circle cx="13.5" cy="18" r="3.5"/>
+    </svg>
+  </button>
+  <button type="button" data-tool="pulse" data-label="Pulse" aria-label="Pulse" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="10" opacity=".45"/>
+    </svg>
+  </button>
+  <button type="button" data-tool="magnet" data-label="Magnet" aria-label="Magnet" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 4h4v7a3 3 0 0 0 6 0V4h4v7a7 7 0 0 1-14 0z"/><path d="M5 8h4M15 8h4"/>
+    </svg>
+  </button>
+  <button type="button" data-tool="gust" data-label="Gust" aria-label="Gust" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>
+    </svg>
+  </button>
+</div>
+
+<!-- Playground controls. Remove this block for the real site. -->
+<div class="lab" id="lab">
+  <button class="lab-toggle" type="button">Ball lab</button>
+  <div class="lab-body">
+    <div id="lab-sliders"></div>
+    <div class="lab-buttons">
+      <button type="button" id="btn-drop">Drop starter ball</button>
+      <button type="button" id="btn-clear">Clear box balls</button>
+      <button type="button" id="btn-debug">Show colliders</button>
+      <button type="button" id="btn-defaults">Reset physics</button>
+    </div>
+    <p class="lab-note">Settings are saved in this browser. Baskets count toward the real global counter.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ============================================================
+  // Config
+  // ============================================================
+
+  const SITE_URL = 'https://xeninterloper.github.io';
+  document.getElementById('destroy-link').href =
+    'https://destroy.spritefusion.com/?from=badge&url=' + encodeURIComponent(SITE_URL);
+
+  const DEFAULTS = {
+    gravity: 2400,      // px/s²
+    bounce: 0.62,       // restitution (0 = dead, 1 = perfectly bouncy)
+    rollFriction: 0,    // extra rolling slowdown on top of the constant ROLL_DECEL (0 feels most like real rolling)
+    airDrag: 0.12,      // velocity lost per second while airborne
+    radius: 18,         // px
+  };
+  const BOUNCE_MIN = 90;     // below this impact speed the ball stops bouncing and settles
+  const ROLL_DECEL = 120;    // constant rolling deceleration (px/s²) so it fully stops
+  const MAX_THROW = 4200;    // px/s
+
+  const P = { ...DEFAULTS };
+  try {
+    const saved = JSON.parse(localStorage.getItem('ballLab.physics') || '{}');
+    for (const k in DEFAULTS) if (typeof saved[k] === 'number') P[k] = saved[k];
+  } catch {}
+
+  // Hoop collision geometry, in the hoop SVG's viewBox coordinates (see markup).
+  const HOOP = {
+    viewW: 240,
+    backboard: { x: 166, y: 8, w: 12, h: 128 },
+    rimTip: { x: 72, y: 112, r: 4 },
+    rimY: 112,
+    net: { l: 74, r: 164, t: 114, b: 172 },
+  };
+
+  // ============================================================
+  // Basket counter storage — Firebase Realtime Database (global, all visitors)
+  // ------------------------------------------------------------
+  // The database rules only allow `baskets` to go up by exactly 1, so these
+  // public config values can't be used to tamper with the count.
+  // ============================================================
+  const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyARIK9h2RGSgPQ7I95lcy-c4yYXq3MNHPE',
+    authDomain: 'mkosinski-portfolio.firebaseapp.com',
+    databaseURL: 'https://mkosinski-portfolio-default-rtdb.firebaseio.com',
+    projectId: 'mkosinski-portfolio',
+    storageBucket: 'mkosinski-portfolio.firebasestorage.app',
+    messagingSenderId: '630619272166',
+    appId: '1:630619272166:web:9cfc6f5747a559f9049c27',
+  };
+  const FIREBASE_SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+  const ScoreStore = {
+    _fb: null,
+    _load() {
+      this._fb ||= Promise.all([
+        import(FIREBASE_SDK + 'firebase-app.js'),
+        import(FIREBASE_SDK + 'firebase-database.js'),
+      ]).then(([appMod, db]) => {
+        const app = appMod.initializeApp(FIREBASE_CONFIG);
+        return { db, ref: db.ref(db.getDatabase(app), 'baskets') };
+      });
+      return this._fb;
+    },
+    // Calls cb(count) now and whenever anyone scores; cb(null) if unreachable.
+    subscribe(cb) {
+      let heard = false;
+      const timeout = setTimeout(() => { if (!heard) cb(null); }, 10000);
+      this._load().then(({ db, ref }) => {
+        db.onValue(ref, snap => { heard = true; clearTimeout(timeout); cb(snap.val() || 0); },
+                        err => { console.warn('Basket counter unavailable:', err); cb(null); });
+      }).catch(err => { console.warn('Could not load Firebase:', err); cb(null); });
+    },
+    // Atomic +1; retried automatically if two people score at the same time.
+    increment() {
+      return this._load()
+        .then(({ db, ref }) => db.runTransaction(ref, cur => (cur || 0) + 1))
+        .catch(err => console.warn('Could not record basket:', err));
+    },
+  };
+
+  // ============================================================
+  // Elements
+  // ============================================================
+  const hoopEl = document.getElementById('hoop');
+  const footerEl = document.getElementById('footer');
+  const netG = document.getElementById('net-g');
+  const countEl = document.getElementById('basket-count');
+  const popEl = document.getElementById('pop');
+  const boxEl = document.getElementById('box');
+  const peekLayer = document.getElementById('box-peek');
+  const canvas = document.getElementById('debug');
+  const ctx = canvas.getContext('2d');
+
+  // Build the net lattice
+  (function buildNet() {
+    const rows = 4, cols = 7, n = HOOP.net;
+    const L1 = 92, R1 = 146;
+    const pts = [];
+    for (let k = 0; k < rows; k++) {
+      const t = k / (rows - 1);
+      const y = n.t + (n.b - n.t) * t;
+      const L = n.l + (L1 - n.l) * t, R = n.r + (R1 - n.r) * t;
+      const row = [];
+      for (let j = 0; j < cols; j++) row.push([+(L + (R - L) * j / (cols - 1)).toFixed(1), +y.toFixed(1)]);
+      pts.push(row);
+    }
+    const P2 = p => p[0] + ' ' + p[1];
+    let d = '';
+    for (let k = 0; k < rows - 1; k++) {
+      for (let j = 0; j < cols; j++) {
+        if (j + 1 < cols) d += `M${P2(pts[k][j])}L${P2(pts[k + 1][j + 1])}`;
+        if (j - 1 >= 0)   d += `M${P2(pts[k][j])}L${P2(pts[k + 1][j - 1])}`;
+      }
+    }
+    d += `M${P2(pts[0][0])}` + pts.slice(1).map(r => `L${P2(r[0])}`).join('');
+    d += `M${P2(pts[0][cols - 1])}` + pts.slice(1).map(r => `L${P2(r[cols - 1])}`).join('');
+    d += `M${P2(pts[rows - 1][0])}L${P2(pts[rows - 1][cols - 1])}`;
+    document.getElementById('net').setAttribute('d', d);
+  })();
+
+  // ============================================================
+  // Colors
+  // ------------------------------------------------------------
+  // The starter ball is always #ff3d5a, which in HSB is about (351°, 76%, 100%).
+  // Balls from the box keep that saturation and brightness with a random hue.
+  // ============================================================
+  const STARTER_RGB = [255, 61, 90];
+  const BALL_S = 194 / 255, BALL_B = 1;
+  function hsbToRgb(h, s, v) {
+    const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+    return [f(5), f(3), f(1)].map(x => Math.round(x * 255));
+  }
+  const randomBallColor = () => hsbToRgb(Math.random() * 360, BALL_S, BALL_B);
+  function paint(el, [r, g, b]) {
+    el.style.background = `rgb(${r},${g},${b})`;
+    el.style.boxShadow = `0 0 10px rgba(${r},${g},${b},.75), 0 0 28px rgba(${r},${g},${b},.35)`;
+  }
+
+  // ============================================================
+  // Layout cache. Everything (balls included) lives in page coordinates,
+  // so scrolling moves the balls together with the page.
+  // ============================================================
+  const BOX = { w: 124, h: 84, wall: 8, offset: 48 }; // offset: px in from the platform's left end
+  let platforms = [];
+  let groundY = Infinity;
+  let hoop = null;
+  let box = null;
+
+  function measure() {
+    const sy = window.scrollY;
+    platforms = [...document.querySelectorAll('[data-platform]')].map(el => {
+      const r = el.getBoundingClientRect();
+      const inset = parseFloat(el.dataset.platformInset || 0);
+      return { left: r.left + inset, right: r.right - inset, top: r.top + sy };
+    });
+    groundY = footerEl.getBoundingClientRect().top + sy;
+
+    const h = hoopEl.getBoundingClientRect();
+    const S = h.width / HOOP.viewW;
+    const ox = h.left, oy = h.top + sy;
+    const bb = HOOP.backboard, tip = HOOP.rimTip, n = HOOP.net;
+    hoop = {
+      backboard: { l: ox + bb.x * S, r: ox + (bb.x + bb.w) * S, t: oy + bb.y * S, b: oy + (bb.y + bb.h) * S },
+      rim: { x: ox + tip.x * S, y: oy + tip.y * S, r: Math.max(3, tip.r * S) },
+      scoreY: oy + HOOP.rimY * S,
+      scoreL: ox + (tip.x + tip.r) * S,
+      scoreR: ox + bb.x * S,
+      net: { l: ox + n.l * S, r: ox + n.r * S, t: oy + n.t * S, b: oy + n.b * S },
+    };
+
+    // The box stands on the first platform.
+    const p0 = platforms[0];
+    if (p0) {
+      // Line the box up with the left edge of the content column (but never closer than
+      // BOX.offset to the platform's end).
+      const bx = Math.round(Math.max(p0.left + BOX.offset, contentEdges().left)), by = Math.round(p0.top - BOX.h);
+      boxEl.style.left = bx + 'px';
+      boxEl.style.top = by + 'px';
+      boxEl.style.visibility = 'visible';
+      box = {
+        l: bx, r: bx + BOX.w, t: by, b: by + BOX.h,
+        // Walls are rects with rounded tops (caps), so balls roll off the edge instead of perching on it.
+        walls: [
+          { l: bx, r: bx + BOX.wall, t: by + BOX.wall / 2, b: by + BOX.h },
+          { l: bx + BOX.w - BOX.wall, r: bx + BOX.w, t: by + BOX.wall / 2, b: by + BOX.h },
+        ],
+        caps: [
+          { x: bx + BOX.wall / 2, y: by + BOX.wall / 2, r: BOX.wall / 2 },
+          { x: bx + BOX.w - BOX.wall / 2, y: by + BOX.wall / 2, r: BOX.wall / 2 },
+        ],
+      };
+    }
+  }
+  new ResizeObserver(measure).observe(document.body);
+  window.addEventListener('resize', () => { measure(); clampToBounds(); });
+  if (document.fonts) document.fonts.ready.then(measure);
+  setInterval(measure, 2000); // cheap safety net for layout shifts
+
+  // Left/right edges of the 980px content column (matches .wrap's inner width).
+  function contentEdges() {
+    const W = document.documentElement.clientWidth, inner = Math.min(W - 44, 936);
+    return { left: (W - inner) / 2, right: (W + inner) / 2 };
+  }
+  const viewW = () => document.documentElement.clientWidth;
+  const viewH = () => window.innerHeight;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // ============================================================
+  // Balls (page coordinates)
+  // ============================================================
+  const MAX_BALLS = 30;
+  const balls = [];
+  let drag = null;
+  let heldBall = null; // the ball in your hand this frame (grab or flick-aim); immovable to other balls
+  let nowMs = performance.now();
+
+  function makeBall(rgb, starter = false) {
+    const el = document.createElement('div');
+    el.className = 'ball';
+    el.setAttribute('role', 'img');
+    el.setAttribute('aria-label', 'A draggable ball');
+    paint(el, rgb);
+    const b = { el, rgb, starter, x: 0, y: -1000, vx: 0, vy: 0,
+                grounded: false, g: false, onScreen: false, lastScoreAt: 0, dead: false };
+    sizeBall(b);
+    el.addEventListener('pointerdown', e => ballPointerDown(b, e));
+    el.addEventListener('pointermove', moveDrag);
+    el.addEventListener('pointerup', endDrag);
+    el.addEventListener('pointercancel', endDrag);
+    document.body.appendChild(el);
+    balls.push(b);
+    if (balls.length > MAX_BALLS) {
+      const oldest = balls.find(o => !o.starter && o !== b && !(drag && drag.ball === o));
+      if (oldest) removeBall(oldest, 'fade-out');
+    }
+    return b;
+  }
+
+  function removeBall(b, how) {
+    if (b.dead) return;
+    b.dead = true;
+    balls.splice(balls.indexOf(b), 1);
+    if (drag && drag.ball === b) drag = null;
+    // Shrink and fade in place. The scale has to come AFTER the translate inside `transform`:
+    // the separate CSS `scale` property is applied before `transform`, which would also shrink
+    // the ball's position and send it flying toward the top-left corner of the page.
+    const r = P.radius, intoBox = how === 'into-box';
+    b.el.classList.add(how);           // turns on the opacity/transform transition
+    void b.el.offsetWidth;             // start the transition from where the ball is now
+    b.el.style.transform = `translate3d(${(b.x - r).toFixed(2)}px, ${(b.y - r + (intoBox ? r * 0.6 : 0)).toFixed(2)}px, 0) scale(${intoBox ? 0.55 : 0.3})`;
+    setTimeout(() => b.el.remove(), 300);
+  }
+
+  function sizeBall(b) {
+    const d = P.radius * 2;
+    b.el.style.width = d + 'px';
+    b.el.style.height = d + 'px';
+  }
+  function applySize() {
+    balls.forEach(sizeBall);
+    layoutPeeks();
+  }
+
+  function clampToBounds() {
+    const r = P.radius;
+    for (const b of balls) {
+      b.x = clamp(b.x, r, viewW() - r);
+      if (b.y + r > groundY) b.y = groundY - r;
+    }
+  }
+
+  // ============================================================
+  // The box's visible balls ("peeks"). Grab one to pull a ball out.
+  // ============================================================
+  const PEEK_SLOTS = [{ fx: .26, dy: .2 }, { fx: .52, dy: -.05 }, { fx: .77, dy: .25 }];
+  const peeks = PEEK_SLOTS.map(slot => {
+    const el = document.createElement('div');
+    el.className = 'peek';
+    peekLayer.append(el);
+    const p = { el, slot, rgb: randomBallColor() };
+    paint(el, p.rgb);
+    el.addEventListener('pointerdown', e => pullOut(p, e));
+    return p;
+  });
+  function layoutPeeks() {
+    const r = P.radius;
+    for (const p of peeks) {
+      Object.assign(p.el.style, {
+        width: 2 * r + 'px', height: 2 * r + 'px',
+        left: BOX.w * p.slot.fx - r + 'px', top: p.slot.dy * r - r + 'px',
+      });
+    }
+  }
+  layoutPeeks();
+
+  // Grab pulls a ball out into your hand, Flick pulls one out ready to aim, Sling pulls one
+  // out on a rope. With Pulse the press falls through to the pulse instead.
+  function pullOut(p, e) {
+    if (tool !== 'grab' && tool !== 'flick' && tool !== 'sling') return;
+    if (drag || sling || aim || p.el.classList.contains('hidden')) return;
+    e.preventDefault();
+    const rect = p.el.getBoundingClientRect();
+    const b = makeBall(p.rgb);
+    b.x = rect.left + rect.width / 2;
+    b.y = rect.top + rect.height / 2 + window.scrollY;
+    render();
+    if (tool === 'grab') startDrag(b, e);
+    else if (tool === 'flick') { startAim(b, e); if (aim) aim.inBox = true; } // rests on the pile until launched
+    else startSling(b, e);
+    sinkPeek(p);
+  }
+
+  // Sink a peek slot, then pop up a fresh random-colored ball in it.
+  function sinkPeek(p) {
+    p.el.classList.add('hidden');
+    setTimeout(() => {
+      p.rgb = randomBallColor();
+      paint(p.el, p.rgb);
+      p.el.classList.remove('hidden');
+    }, 650);
+  }
+
+  function dropIntoBox(b) {
+    removeBall(b, 'into-box');
+    boxEl.classList.remove('thunk'); void boxEl.offsetWidth; boxEl.classList.add('thunk');
+  }
+
+  // ============================================================
+  // Physics
+  // ============================================================
+
+  // Bounce ball b off a static surface with outward normal (nx, ny).
+  function resolveVelocity(b, nx, ny) {
+    const vn = b.vx * nx + b.vy * ny;
+    if (vn >= 0) return;
+    const e = -vn > BOUNCE_MIN ? P.bounce : 0;
+    b.vx -= (1 + e) * vn * nx;
+    b.vy -= (1 + e) * vn * ny;
+    // a little tangential grip on impacts
+    const tx = -ny, ty = nx, vt = b.vx * tx + b.vy * ty;
+    b.vx -= vt * 0.08 * tx; b.vy -= vt * 0.08 * ty;
+  }
+
+  // Land on a horizontal top surface.
+  function landOn(b, top) {
+    b.y = top - P.radius;
+    if (b.vy > 0) b.vy = b.vy > BOUNCE_MIN ? -b.vy * P.bounce : 0;
+  }
+
+  function collideRect(b, s) {
+    const r = P.radius;
+    const cx = clamp(b.x, s.l, s.r), cy = clamp(b.y, s.t, s.b);
+    const dx = b.x - cx, dy = b.y - cy, d2 = dx * dx + dy * dy;
+    if (d2 >= r * r) return false;
+    let nx, ny, pen;
+    if (d2 > 1e-6) {
+      const d = Math.sqrt(d2);
+      nx = dx / d; ny = dy / d; pen = r - d;
+    } else {
+      const dl = b.x - s.l, dr = s.r - b.x, dt = b.y - s.t, db = s.b - b.y;
+      const m = Math.min(dl, dr, dt, db);
+      if (m === dt)      { nx = 0;  ny = -1; pen = dt + r; }
+      else if (m === db) { nx = 0;  ny = 1;  pen = db + r; }
+      else if (m === dl) { nx = -1; ny = 0;  pen = dl + r; }
+      else               { nx = 1;  ny = 0;  pen = dr + r; }
+    }
+    b.x += nx * pen; b.y += ny * pen;
+    resolveVelocity(b, nx, ny);
+    return ny < -0.6;
+  }
+
+  function collideCircle(b, c) {
+    const dx = b.x - c.x, dy = b.y - c.y;
+    const R = P.radius + c.r, d2 = dx * dx + dy * dy;
+    if (d2 >= R * R || d2 < 1e-9) return false;
+    const d = Math.sqrt(d2), nx = dx / d, ny = dy / d;
+    b.x += nx * (R - d); b.y += ny * (R - d);
+    resolveVelocity(b, nx, ny);
+    return ny < -0.6;
+  }
+
+  // Ball vs ball (equal mass). A ball being dragged acts as immovable and shoves the other.
+  function collidePair(a, b) {
+    const R = 2 * P.radius;
+    const dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+    if (d2 >= R * R || d2 < 1e-9) return;
+    const aFixed = heldBall === a, bFixed = heldBall === b;
+    const wa = aFixed ? 0 : bFixed ? 1 : 0.5;
+    const wb = bFixed ? 0 : aFixed ? 1 : 0.5;
+    const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, pen = R - d;
+    a.x -= nx * pen * wa; a.y -= ny * pen * wa;
+    b.x += nx * pen * wb; b.y += ny * pen * wb;
+    if (ny > 0.6) a.g = true;   // a is resting on b
+    if (ny < -0.6) b.g = true;  // b is resting on a
+    const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+    if (rv >= 0) return;
+    const j = -(1 + (-rv > BOUNCE_MIN ? P.bounce : 0)) * rv;
+    a.vx -= nx * j * wa; a.vy -= ny * j * wa;
+    b.vx += nx * j * wb; b.vy += ny * j * wb;
+  }
+
+  // Everything that isn't another ball: platforms, hoop, box, ground, screen edges.
+  function collideWorld(b, sy, H, W) {
+    const r = P.radius;
+
+    // Zero gravity: a ball that floats into the top/bottom edge of the screen bounces off it,
+    // so balls stay in view. Only movement crosses these edges; scrolling never drags a ball.
+    if (zeroG) {
+      const top = sy + NAV_H, bottom = sy + H;
+      if (b.yPrev - r >= top - 0.5 && b.y - r < top) { b.y = top + r; if (b.vy < 0) b.vy = -b.vy * P.bounce; }
+      if (b.yPrev + r <= bottom + 0.5 && b.y + r > bottom) { b.y = bottom - r; if (b.vy > 0) b.vy = -b.vy * P.bounce; }
+    }
+
+    // Collisions only count while the ball is on screen; off screen it falls
+    // through everything (except the ground) until it's visible again.
+    b.onScreen = b.y > sy && b.y < sy + H;
+    if (b.onScreen) {
+      for (const p of platforms) {
+        if (b.x < p.left || b.x > p.right) continue;
+        if (b.yPrev + r <= p.top + 0.75 && b.y + r >= p.top) { landOn(b, p.top); b.g = true; }
+      }
+
+      if (hoop) {
+        if (collideRect(b, hoop.backboard)) b.g = true;
+        if (collideCircle(b, hoop.rim)) b.g = true;
+
+        const net = hoop.net;
+        if (b.x > net.l && b.x < net.r && b.y > net.t && b.y < net.b) {
+          b.vx *= Math.exp(-5 * b.h);
+          b.vy *= Math.exp(-1.2 * b.h);
+        }
+
+        if (b.yPrev < hoop.scoreY && b.y >= hoop.scoreY &&
+            b.x > hoop.scoreL && b.x < hoop.scoreR &&
+            b.xPrev > hoop.scoreL - r && nowMs - b.lastScoreAt > 800) {
+          b.lastScoreAt = nowMs;
+          onBasket();
+        }
+      }
+
+      if (collideMoon(b)) b.g = true;
+
+      if (box) {
+        for (const w of box.walls) if (collideRect(b, w)) b.g = true;
+        for (const c of box.caps) if (collideCircle(b, c)) b.g = true;
+        // Sunk into the opening → it's back in the box (unless it's on the sling rope or was just blasted out).
+        const protectedBall = (sling && sling.ball === b) || (aim && aim.ball === b) || nowMs < (b.noBoxUntil || 0) ||
+                              (hold && tool === 'magnet');
+        if (!protectedBall && b.x > box.l + BOX.wall && b.x < box.r - BOX.wall && b.y > box.t + r * 0.4 && b.y < box.b) {
+          dropIntoBox(b);
+          return;
+        }
+      }
+    }
+
+    // The footer's top edge is the ground; it always applies.
+    if (b.y + r >= groundY) { landOn(b, groundY); b.g = true; }
+
+    // Screen edges are walls.
+    if (b.x - r < 0) { b.x = r; if (b.vx < 0) b.vx = -b.vx * P.bounce * 0.85; }
+    if (b.x + r > W) { b.x = W - r; if (b.vx > 0) b.vx = -b.vx * P.bounce * 0.85; }
+  }
+
+  function step(dt) {
+    const r = P.radius, sy = window.scrollY, W = viewW(), H = viewH();
+    // A ball in your hand (grab) doesn't move on its own. A ball being aimed (flick) keeps
+    // moving freely until you let go, except one picked out of the box: it stays on the pile.
+    const boxAim = aim && aim.inBox ? aim.ball : null;
+    const held = drag ? drag.ball : boxAim;
+    heldBall = held;
+    if (boxAim) { boxAim.vx = 0; boxAim.vy = 0; boxAim.onScreen = true; }
+
+    if (drag) {
+      const last = drag.samples[drag.samples.length - 1];
+      const tx = clamp(last.x - drag.ox, r, W - r);
+      const ty = Math.min(last.y - drag.oy + sy, groundY - r);
+      if (dt > 0) {
+        held.vx = clamp((tx - held.x) / dt, -MAX_THROW, MAX_THROW);
+        held.vy = clamp((ty - held.y) / dt, -MAX_THROW, MAX_THROW);
+      }
+      held.x = tx; held.y = ty;
+      held.onScreen = true;
+    }
+
+    const free = balls.filter(b => b !== held);
+    const gravity = zeroG ? 0 : P.gravity;
+
+    // Sling: the rope's top end follows the cursor.
+    let a0x = 0, a0y = 0, a1x = 0, a1y = 0, avx = 0, avy = 0;
+    if (sling) {
+      a0x = sling.ax; a0y = sling.ay;
+      a1x = pointer.x; a1y = pointer.y + sy;
+      if (dt > 0) { avx = (a1x - a0x) / dt; avy = (a1y - a0y) / dt; }
+      sling.ax = a1x; sling.ay = a1y;
+    }
+
+    // Magnet / Gust: a force field around the cursor while the button is held.
+    let field = null;
+    const cx = pointer.x, cy = pointer.y + sy;
+    if (hold && tool === 'magnet') {
+      // Every ball on the page is pulled in. Off-screen balls already pass through
+      // everything until they're visible, so stuck ones come straight back into view.
+      field = (b, h) => {
+        const dx = cx - b.x, dy = cy - b.y, d = Math.hypot(dx, dy) || 1;
+        const a = MAGNET.accel * Math.min(1, d / 60);
+        b.vx += dx / d * a * h; b.vy += dy / d * a * h;
+        if (d < MAGNET.calm) { const k = Math.exp(-5 * h); b.vx *= k; b.vy *= k; } // settle into a cluster
+        const sp = Math.hypot(b.vx, b.vy);
+        if (sp > MAGNET.maxSpeed) { b.vx *= MAGNET.maxSpeed / sp; b.vy *= MAGNET.maxSpeed / sp; }
+      };
+    } else if (hold && tool === 'gust') {
+      // Aim at the nearest visible ball; anything inside the widening cone gets blown along.
+      let target = null, best = Infinity;
+      for (const b of free) {
+        if (!b.onScreen) continue;
+        const d = Math.hypot(b.x - cx, b.y - cy);
+        if (d < best) { best = d; target = b; }
+      }
+      if (target && best > 1) {
+        const ux = (target.x - cx) / best, uy = (target.y - cy) / best;
+        gustDir = { ux, uy };
+        field = (b, h) => {
+          if (!b.onScreen) return;
+          const rx = b.x - cx, ry = b.y - cy;
+          const along = rx * ux + ry * uy;
+          if (along <= 0 || along > GUST.range) return;
+          const perp = Math.abs(rx * uy - ry * ux), width = 24 + along * GUST.spread + r;
+          if (perp > width) return;
+          const a = GUST.accel * (1 - along / GUST.range) * (1 - 0.6 * perp / width);
+          b.vx += ux * a * h; b.vy += uy * a * h;
+        };
+      } else gustDir = null;
+    }
+
+    // Pulse waves: each ring shoves a ball once, when its edge reaches it.
+    for (const p of pulses) {
+      const age = Math.max(0, (nowMs - p.t0) / 1000);
+      const ring = PULSE.radius * (1 - Math.pow(1 - Math.min(age / PULSE.time, 1), 3));
+      for (const b of free) {
+        if (b.dead || p.hit.has(b)) continue;
+        const dx = b.x - p.x, dy = b.y - p.y, d = Math.hypot(dx, dy);
+        if (d > PULSE.radius + r || d > ring + r) continue;
+        p.hit.add(b);
+        const nx = d > 1 ? dx / d : 0, ny = d > 1 ? dy / d : -1;
+        const push = PULSE.strength * Math.sqrt(Math.max(0, 1 - d / (PULSE.radius + r))) + 150;
+        b.vx += nx * push; b.vy += ny * push;
+      }
+      // It also blows balls out of the box, as long as it isn't pushing them down into it.
+      if (box) for (const pk of peeks) {
+        if (p.hit.has(pk) || pk.el.classList.contains('hidden')) continue;
+        const px = box.l + BOX.w * pk.slot.fx, py = box.t + pk.slot.dy * r;
+        const dx = px - p.x, dy = py - p.y, d = Math.hypot(dx, dy);
+        if (d > PULSE.radius + r || d > ring + r) continue;
+        p.hit.add(pk);
+        if (d < 1 || dy / d > 0.35) continue;
+        const b = makeBall(pk.rgb);
+        const push = PULSE.strength * Math.sqrt(Math.max(0, 1 - d / (PULSE.radius + r))) + 250;
+        b.x = px; b.y = py;
+        b.vx = dx / d * push; b.vy = dy / d * push - 250; // a little lift to clear the walls
+        b.noBoxUntil = nowMs + 500;
+        sinkPeek(pk);
+      }
+    }
+
+    let maxSpeed = 0;
+    for (const b of free) { maxSpeed = Math.max(maxSpeed, Math.hypot(b.vx, b.vy)); b.gAny = false; }
+    const travel = Math.max(maxSpeed * dt, sling ? Math.hypot(a1x - a0x, a1y - a0y) : 0);
+    const n = clamp(Math.ceil(travel / (r * 0.5)), 1, 30);
+    const h = dt / n;
+
+    for (let k = 0; k < n; k++) {
+      for (const b of free) {
+        if (b.dead) continue;
+        b.xPrev = b.x; b.yPrev = b.y; b.g = false; b.h = h;
+        b.vy += gravity * h;
+        const air = Math.exp(-P.airDrag * h);
+        b.vx *= air; b.vy *= air;
+        if (field) field(b, h);
+        b.x += b.vx * h;
+        b.y += b.vy * h;
+        b.onScreen = b.y > sy && b.y < sy + H;
+      }
+
+      // Ball vs ball, only between balls that are both on screen.
+      for (let it = 0; it < 2; it++) {
+        for (let i = 0; i < balls.length; i++) {
+          const a = balls[i];
+          if (!a.onScreen) continue;
+          for (let j = i + 1; j < balls.length; j++) {
+            if (balls[j].onScreen) collidePair(a, balls[j]);
+          }
+        }
+      }
+
+      if (sling && !sling.ball.dead) {
+        const t = (k + 1) / n;
+        ropeSpring(sling.ball, a0x + (a1x - a0x) * t, a0y + (a1y - a0y) * t, avx, avy, h);
+      }
+
+      for (const b of free) if (!b.dead) collideWorld(b, sy, H, W);
+
+      for (const b of free) {
+        if (b.dead || !b.g) continue;
+        const sgn = Math.sign(b.vx);
+        b.vx -= sgn * Math.min(Math.abs(b.vx), ROLL_DECEL * h);
+        b.vx *= Math.exp(-P.rollFriction * h);
+        if (Math.abs(b.vx) < 4) b.vx = 0;
+        b.gAny = true;
+      }
+    }
+    for (const b of free) b.grounded = b.gAny;
+  }
+
+  // ============================================================
+  // Rendering
+  // ============================================================
+  function render() {
+    const r = P.radius;
+    for (const b of balls) {
+      b.el.style.transform = `translate3d(${(b.x - r).toFixed(2)}px, ${(b.y - r).toFixed(2)}px, 0)`;
+    }
+  }
+
+  let debugOn = false;
+  function drawDebug() {
+    const dpr = window.devicePixelRatio || 1;
+    const W = viewW(), H = viewH(), sy = window.scrollY;
+    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (!debugOn) return;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(111,227,225,.9)';
+    for (const p of platforms) {
+      const y = p.top - sy;
+      if (y < -5 || y > H + 5) continue;
+      ctx.beginPath(); ctx.moveTo(p.left, y); ctx.lineTo(p.right, y); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(247,194,122,.9)';
+    ctx.beginPath(); ctx.moveTo(0, groundY - sy); ctx.lineTo(W, groundY - sy); ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255,61,90,.95)';
+    if (hoop) {
+      const b = hoop.backboard; ctx.strokeRect(b.l, b.t - sy, b.r - b.l, b.b - b.t);
+      ctx.beginPath(); ctx.arc(hoop.rim.x, hoop.rim.y - sy, hoop.rim.r, 0, Math.PI * 2); ctx.stroke();
+    }
+    if (box) {
+      for (const w of box.walls) ctx.strokeRect(w.l, w.t - sy, w.r - w.l, w.b - w.t);
+      for (const c of box.caps) { ctx.beginPath(); ctx.arc(c.x, c.y - sy, c.r, 0, Math.PI * 2); ctx.stroke(); }
+    }
+
+    ctx.setLineDash([4, 4]);
+    if (hoop) {
+      ctx.strokeStyle = 'rgba(120,255,160,.95)';
+      ctx.beginPath(); ctx.moveTo(hoop.scoreL, hoop.scoreY - sy); ctx.lineTo(hoop.scoreR, hoop.scoreY - sy); ctx.stroke();
+      ctx.strokeStyle = 'rgba(165,150,242,.7)';
+      const n = hoop.net; ctx.strokeRect(n.l, n.t - sy, n.r - n.l, n.b - n.t);
+    }
+    if (box) {
+      // the ball's center has to cross this line inside the box to go back in
+      ctx.strokeStyle = 'rgba(120,255,160,.95)';
+      const y = box.t + P.radius * 0.4 - sy;
+      ctx.beginPath(); ctx.moveTo(box.l + BOX.wall, y); ctx.lineTo(box.r - BOX.wall, y); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = 'rgba(232,234,244,.85)'; ctx.lineWidth = 1.5;
+    ctx.fillStyle = 'rgba(232,234,244,.9)'; ctx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+    for (const b of balls) {
+      const bx = b.x, by = b.y - sy;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + b.vx * 0.05, by + b.vy * 0.05); ctx.stroke();
+      if (b.starter || (drag && drag.ball === b)) {
+        ctx.fillText(`v=(${b.vx.toFixed(0)}, ${b.vy.toFixed(0)})  ${b.grounded ? 'grounded' : 'airborne'}  ${b.onScreen ? 'on screen' : 'off screen (no collisions)'}`,
+          bx + P.radius + 6, by - P.radius);
+      }
+    }
+    ctx.fillText(`${balls.length} ball${balls.length === 1 ? '' : 's'} out · tool: ${tool}${zeroG ? ' · zero gravity' : ''}`, 76, 64);
+  }
+
+  // ============================================================
+  // Main loop
+  // ============================================================
+  let lastT = performance.now();
+  let loggedError = false;
+  function frame(t) {
+    // Schedule the next frame first, so an error in one frame can never stop the loop for good.
+    requestAnimationFrame(frame);
+    // performance.now() is used for event timestamps; rAF's `t` can be slightly behind it.
+    t = Math.max(t, performance.now());
+    nowMs = t;
+    const dt = Math.min(Math.max((t - lastT) / 1000, 0), 1 / 30);
+    lastT = t;
+    try {
+      updateMoon(dt);
+      step(dt);
+      render();
+      drawDebug();
+      drawFx();
+    } catch (err) {
+      if (!loggedError) { console.error('Ball physics frame failed:', err); loggedError = true; }
+    }
+  }
+
+  // ============================================================
+  // Entrance: toss the red starter ball in from above the screen, near the
+  // right side, aiming for the first divider if it's on screen.
+  // ============================================================
+  function dropIn() {
+    measure();
+    const r = P.radius, W = viewW(), sy = window.scrollY;
+    let x = W - 60;
+    const first = platforms[0];
+    if (first) {
+      const top = first.top - sy;
+      if (top > 80 && top < viewH() - 10) x = Math.min(first.right - 50, contentEdges().right - 30, W - r - 10);
+    }
+    const b = balls.find(o => o.starter) || makeBall(STARTER_RGB, true);
+    if (drag && drag.ball === b) drag = null;
+    Object.assign(b, { x, y: sy - r - 30, vx: -25, vy: 120 });
+  }
+
+  // ============================================================
+  // Dragging / throwing (one ball at a time)
+  // ============================================================
+  function startDrag(b, e) {
+    if (drag) return;
+    e.preventDefault();
+    b.el.setPointerCapture(e.pointerId);
+    drag = {
+      ball: b, id: e.pointerId,
+      ox: e.clientX - b.x, oy: e.clientY - (b.y - window.scrollY),
+      samples: [{ t: performance.now(), x: e.clientX, y: e.clientY }],
+    };
+    b.el.classList.add('grabbing');
+    // keep the held ball on top of the others
+    b.el.style.zIndex = 61;
+  }
+  function moveDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const t = performance.now();
+    drag.samples.push({ t, x: e.clientX, y: e.clientY });
+    while (drag.samples.length > 2 && t - drag.samples[0].t > 120) drag.samples.shift();
+  }
+  function endDrag(e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const b = drag.ball;
+    const t = performance.now();
+    const s = drag.samples.filter(p => t - p.t < 100);
+    let vx = 0, vy = 0;
+    if (s.length >= 2) {
+      const a = s[0], z = s[s.length - 1], span = (z.t - a.t) / 1000;
+      if (span > 0.004) { vx = (z.x - a.x) / span; vy = (z.y - a.y) / span; }
+    }
+    const sp = Math.hypot(vx, vy);
+    if (sp > MAX_THROW) { vx *= MAX_THROW / sp; vy *= MAX_THROW / sp; }
+    b.vx = vx; b.vy = vy;
+    b.el.classList.remove('grabbing');
+    b.el.style.zIndex = '';
+    drag = null;
+  }
+
+  // ============================================================
+  // Toolbox: grab (default), flick, sling, pulse
+  // ============================================================
+  const NAV_H = 48;
+  // Flick launch speed = max × (pull / fullPull)^curve, capped at max. curve 1 = linear;
+  // higher = gentler short pulls with the same full-power shot. Pulls under deadZone do nothing.
+  const FLICK = { max: 5200, fullPull: 260, curve: 2, deadZone: 8 };
+  const ROPE = { len: 135, k: 200, damping: 7, maxStretch: 1.6 }; // elastic sling rope
+  const PULSE = { radius: 240, time: 0.28, strength: 1700, life: 0.5 }; // reach, expand time (s), push, fade (s)
+  const MAGNET = { accel: 5200, maxSpeed: 2600, calm: 150 };            // pull, top speed, slow-down zone near cursor
+  const GUST = { accel: 4600, range: 720, spread: 0.22 };               // push, reach, cone widening per px
+
+  let tool = 'grab';
+  let gustDir = null;      // where the gust is currently aimed
+  let aim = null;          // { ball, id } while pulling back a flick
+  let hold = null;         // { id } while the button is held with Magnet or Gust
+  const gustBits = [];     // wind streaks
+  let sling = null;        // { ball, id, ax, ay } while slinging
+  const pulses = [];       // { x, y, t0, hit }
+  const dustBits = [];     // moon debris
+  const pointer = { x: -1e4, y: -1e4 }; // last known cursor position (viewport coords)
+  window.addEventListener('pointermove', e => { pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
+
+  const toolButtons = [...document.querySelectorAll('.toolbox [data-tool]')];
+  function setTool(name) {
+    tool = name;
+    aim = null;
+    releaseSling();
+    for (const btn of toolButtons) {
+      const on = btn.dataset.tool === name;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', on);
+    }
+    hold = null;
+    document.body.classList.remove('tool-grab', 'tool-flick', 'tool-sling', 'tool-pulse', 'tool-magnet', 'tool-gust');
+    document.body.classList.add('tool-' + name);
+  }
+  toolButtons.forEach(btn => btn.addEventListener('click', () => setTool(btn.dataset.tool)));
+  window.addEventListener('keydown', e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+    const name = { 1: 'grab', 2: 'flick', 3: 'sling', 4: 'pulse', 5: 'magnet', 6: 'gust' }[e.key];
+    if (name) setTool(name);
+  });
+  setTool('grab');
+
+  function ballPointerDown(b, e) {
+    if (tool === 'grab') startDrag(b, e);
+    else if (tool === 'flick') startAim(b, e);
+    else if (tool === 'sling') startSling(b, e);
+    // pulse / magnet / gust: the press bubbles up to the page handler below
+  }
+
+  const isUI = el => el.closest && el.closest('.toolbox, .lab, .nav, .moon');
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (isUI(e.target) || moonHit(e.clientX, e.clientY)) return;
+    pointer.x = e.clientX; pointer.y = e.clientY;
+    if (tool === 'pulse') {
+      pulses.push({ x: e.clientX, y: e.clientY + window.scrollY, t0: performance.now(), hit: new Set() });
+    } else if (tool === 'magnet' || tool === 'gust') {
+      e.preventDefault();
+      hold = { id: e.pointerId };
+    }
+  });
+  document.addEventListener('mousedown', e => {
+    if ((tool === 'magnet' || tool === 'gust') && !isUI(e.target)) e.preventDefault(); // no text selection
+  });
+  document.addEventListener('dragstart', e => { if (tool !== 'grab') e.preventDefault(); });
+  function pointerEnd(e) {
+    if (hold && e.pointerId === hold.id) hold = null;
+    if (aim && e.pointerId === aim.id) releaseAim();
+    if (sling && e.pointerId === sling.id) releaseSling();
+  }
+  window.addEventListener('pointerup', pointerEnd);
+  window.addEventListener('pointercancel', e => { if (aim && e.pointerId === aim.id) aim = null; pointerEnd(e); });
+  window.addEventListener('blur', () => { aim = null; hold = null; releaseSling(); });
+
+  // ---- Flick: hold the ball, pull back to aim, let go to launch it away from the cursor.
+  function startAim(b, e) {
+    if (drag || sling || aim) return;
+    e.preventDefault();
+    pointer.x = e.clientX; pointer.y = e.clientY;
+    aim = { ball: b, id: e.pointerId };
+  }
+  function aimVelocity() {
+    const b = aim.ball;
+    const dx = b.x - pointer.x, dy = b.y - (pointer.y + window.scrollY);
+    const pull = Math.hypot(dx, dy);
+    if (pull < FLICK.deadZone) return { vx: 0, vy: 0, pull, power: 0 };
+    const power = Math.pow(Math.min(pull / FLICK.fullPull, 1), FLICK.curve); // 0..1
+    const speed = FLICK.max * power;
+    return { vx: dx / pull * speed, vy: dy / pull * speed, pull, power };
+  }
+  function releaseAim() {
+    const { vx, vy } = aimVelocity();
+    aim.ball.vx = vx; aim.ball.vy = vy;
+    aim = null;
+  }
+
+  // ---- Sling: the ball hangs from a stretchy rope tied to the cursor.
+  function startSling(b, e) {
+    if (drag || sling || aim) return;
+    e.preventDefault();
+    pointer.x = e.clientX; pointer.y = e.clientY;
+    sling = { ball: b, id: e.pointerId, ax: e.clientX, ay: e.clientY + window.scrollY };
+  }
+  // Letting go just cuts the rope; the ball keeps whatever speed it had.
+  function releaseSling() { sling = null; }
+
+  // Elastic rope: slack within ROPE.len, a damped spring beyond it, and a hard limit far past it.
+  function ropeSpring(b, ax, ay, avx, avy, h) {
+    const dx = b.x - ax, dy = b.y - ay, d = Math.hypot(dx, dy);
+    if (d <= ROPE.len || d < 1e-6) return;
+    const nx = dx / d, ny = dy / d;
+    const relV = (b.vx - avx) * nx + (b.vy - avy) * ny;     // stretching speed
+    const a = -ROPE.k * (d - ROPE.len) - ROPE.damping * relV; // spring + damping
+    b.vx += nx * a * h; b.vy += ny * a * h;
+    const maxD = ROPE.len * ROPE.maxStretch;
+    if (d > maxD) {
+      b.x = ax + nx * maxD; b.y = ay + ny * maxD;
+      const out = (b.vx - avx) * nx + (b.vy - avy) * ny;
+      if (out > 0) { b.vx -= nx * out; b.vy -= ny * out; }
+    }
+    const sp = Math.hypot(b.vx, b.vy), max = MAX_THROW * 1.2;
+    if (sp > max) { b.vx *= max / sp; b.vy *= max / sp; }
+  }
+
+  // ---- Effects layer: flick aim, rope, pulse rings, moon dust
+  const fxCanvas = document.getElementById('fx');
+  const fctx = fxCanvas.getContext('2d');
+  let fxDirty = false;
+  function sizeCanvas(c) {
+    const dpr = window.devicePixelRatio || 1, W = viewW(), H = viewH();
+    if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) {
+      c.width = Math.round(W * dpr); c.height = Math.round(H * dpr);
+      c.style.width = W + 'px'; c.style.height = H + 'px';
+    }
+    c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    return [W, H];
+  }
+  function dust(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      const ang = -Math.PI * (0.1 + Math.random() * 0.8);
+      const sp = 80 + Math.random() * 320;
+      dustBits.push({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+                      t0: nowMs, life: 500 + Math.random() * 700, size: 1 + Math.random() * 2.5 });
+    }
+  }
+  function drawFx() {
+    const now = nowMs, sy = window.scrollY;
+    for (let i = pulses.length - 1; i >= 0; i--) if ((now - pulses[i].t0) / 1000 > PULSE.life) pulses.splice(i, 1);
+    for (let i = dustBits.length - 1; i >= 0; i--) if (now - dustBits[i].t0 > dustBits[i].life) dustBits.splice(i, 1);
+    if (sling && sling.ball.dead) releaseSling();
+    if (aim && aim.ball.dead) aim = null;
+    // spawn wind streaks while gusting
+    if (hold && tool === 'gust' && gustDir) {
+      for (let i = 0; i < 3; i++) {
+        const spread = (Math.random() - 0.5) * 0.5, sp = 700 + Math.random() * 500;
+        const ux = gustDir.ux - gustDir.uy * spread, uy = gustDir.uy + gustDir.ux * spread;
+        gustBits.push({ x: pointer.x, y: pointer.y + sy, vx: ux * sp, vy: uy * sp, t0: now, life: 380 + Math.random() * 220 });
+      }
+      if (gustBits.length > 160) gustBits.splice(0, gustBits.length - 160);
+    }
+    for (let i = gustBits.length - 1; i >= 0; i--) if (now - gustBits[i].t0 > gustBits[i].life) gustBits.splice(i, 1);
+    const magnetOn = hold && tool === 'magnet';
+    const active = !!(sling || aim || pulses.length || dustBits.length || gustBits.length || magnetOn);
+    if (!active && !fxDirty) return;
+    const [W, H] = sizeCanvas(fxCanvas);
+    fctx.clearRect(0, 0, W, H);
+    fxDirty = active;
+    if (!active) return;
+    fctx.lineCap = 'round';
+
+    // flick: a line from the ball to the cursor; color and thickness show the power
+    if (aim) {
+      const b = aim.ball, { pull, power } = aimVelocity();
+      if (pull >= FLICK.deadZone) {
+        const col = power < 0.5 ? '111,227,225' : power < 0.85 ? '247,194,122' : '242,126,194';
+        fctx.strokeStyle = `rgba(${col},${(0.5 + 0.45 * power).toFixed(2)})`;
+        fctx.lineWidth = 1.5 + power * 3;
+        fctx.beginPath(); fctx.moveTo(b.x, b.y - sy); fctx.lineTo(pointer.x, pointer.y); fctx.stroke();
+      }
+    }
+
+    // magnet: rings drawn in toward the cursor
+    if (magnetOn) {
+      for (let i = 0; i < 3; i++) {
+        const k = ((now / 700) + i / 3) % 1, rad = 70 * (1 - k) + 6;
+        fctx.strokeStyle = `rgba(165,150,242,${(0.6 * k).toFixed(3)})`;
+        fctx.lineWidth = 1.5;
+        fctx.beginPath(); fctx.arc(pointer.x, pointer.y, rad, 0, Math.PI * 2); fctx.stroke();
+      }
+    }
+
+    // gust: short streaks flying away from the cursor
+    for (const g of gustBits) {
+      const t = (now - g.t0) / 1000, k = (now - g.t0) / g.life;
+      const x = g.x + g.vx * t, y = g.y + g.vy * t - sy;
+      fctx.strokeStyle = `rgba(200,240,245,${(0.55 * (1 - k)).toFixed(3)})`;
+      fctx.lineWidth = 1.2;
+      fctx.beginPath(); fctx.moveTo(x, y); fctx.lineTo(x - g.vx * 0.03, y - g.vy * 0.03); fctx.stroke();
+    }
+
+    // pulse rings
+    for (const p of pulses) {
+      const age = Math.max(0, (now - p.t0) / 1000), k = Math.min(age / PULSE.time, 1);
+      const ring = Math.max(0, PULSE.radius * (1 - Math.pow(1 - k, 3)));
+      const alpha = Math.max(0, 1 - age / PULSE.life);
+      fctx.strokeStyle = `rgba(111,227,225,${alpha.toFixed(3)})`;
+      fctx.lineWidth = 1 + 4 * (1 - k);
+      fctx.beginPath(); fctx.arc(p.x, p.y - sy, ring, 0, Math.PI * 2); fctx.stroke();
+      fctx.strokeStyle = `rgba(165,150,242,${(alpha * 0.5).toFixed(3)})`;
+      fctx.lineWidth = 1;
+      fctx.beginPath(); fctx.arc(p.x, p.y - sy, ring * 0.7, 0, Math.PI * 2); fctx.stroke();
+      if (age < 0.1) {
+        fctx.fillStyle = `rgba(232,234,244,${(0.5 * (1 - age / 0.1)).toFixed(3)})`;
+        fctx.beginPath(); fctx.arc(p.x, p.y - sy, 14, 0, Math.PI * 2); fctx.fill();
+      }
+    }
+
+    // rope: sags when slack, straight and thinner as it stretches
+    if (sling) {
+      const b = sling.ball, ax = pointer.x, ay = pointer.y;
+      const bx = b.x, by = b.y - sy, d = Math.hypot(bx - ax, by - ay) || 1;
+      const ex = bx - (bx - ax) / d * P.radius, ey = by - (by - ay) / d * P.radius; // ball's edge
+      const slack = Math.max(0, ROPE.len - d);
+      const stretch = Math.max(0, d / ROPE.len - 1);
+      fctx.strokeStyle = stretch > 0 ? `rgba(247,${Math.round(217 - stretch * 90)},${Math.round(160 - stretch * 40)},1)` : '#d9c7a0';
+      fctx.lineWidth = Math.max(1, 2.2 - stretch * 1.4);
+      fctx.beginPath(); fctx.moveTo(ax, ay);
+      fctx.quadraticCurveTo((ax + ex) / 2, (ay + ey) / 2 + slack * 0.6, ex, ey);
+      fctx.stroke();
+      fctx.fillStyle = '#d9c7a0';
+      fctx.beginPath(); fctx.arc(ax, ay, 3, 0, Math.PI * 2); fctx.fill();
+    }
+
+    // moon dust
+    for (const p of dustBits) {
+      const t = (now - p.t0) / 1000, k = (now - p.t0) / p.life;
+      const x = p.x + p.vx * t, y = p.y + p.vy * t + 450 * t * t - sy;
+      fctx.fillStyle = `rgba(214,218,232,${(0.85 * (1 - k)).toFixed(3)})`;
+      fctx.beginPath(); fctx.arc(x, y, p.size, 0, Math.PI * 2); fctx.fill();
+    }
+  }
+
+  // ============================================================
+  // The moon: a crescent that crash-landed in the divider under the intro.
+  // Click: it shakes loose and rises into the sky (night sky + zero gravity).
+  // Click it in the sky: it falls back and slams into the divider.
+  // ============================================================
+  const moonEl = document.getElementById('moon');
+  const moonDivider = document.getElementById('moon-divider');
+  const MOON = { sink: -12, rise: 300, shakeTime: 0.6, spring: 26, damping: 0.6, fallG: 3600 };
+  // mode: embedded → shaking → sky → falling → embedded
+  const moon = { x: 0, y: 0, vx: 0, vy: 0, r: 55, mode: 'embedded', t0: 0, fallDir: 1,
+                 site: null, sky: null, leavingGround: false };
+
+  // Collision shape: circles filling the crescent's lit band. Same geometry as the SVG mask:
+  // moon circle at (50,50) r 48, cut by a circle at (76,34) r 40 (viewBox units, 50 = moon radius).
+  const CRESCENT = (() => {
+    const out = [], R = 48, kx = 26, ky = -16, kr = 40;
+    const c = kx * kx + ky * ky - kr * kr; // < 0: the moon's center is inside the cut circle
+    for (let deg = 0; deg < 360; deg += 12) {
+      const ux = Math.cos(deg * Math.PI / 180), uy = Math.sin(deg * Math.PI / 180);
+      const wu = -(kx * ux + ky * uy);
+      const tIn = Math.max(0, -wu + Math.sqrt(wu * wu - c)); // where this ray leaves the cut circle
+      if (tIn >= R - 4) continue; // no lit band in this direction
+      const mid = (tIn + R) / 2, rad = (R - tIn) / 2;
+      out.push({ x: ux * mid / 50, y: uy * mid / 50, r: rad / 50 });
+    }
+    return out;
+  })();
+
+  // Crash site (page coords): the moon's center sits just above the divider line, so about a
+  // third of it is buried, cut off flush with the line.
+  function moonSite() {
+    const rect = moonDivider.getBoundingClientRect(), sy = window.scrollY;
+    return { x: rect.right - moon.r * 2, y: rect.top + sy + MOON.sink, line: rect.top + sy };
+  }
+
+  function updateMoon(dt) {
+    moon.r = moonEl.offsetWidth / 2 || 55;
+    const s = moon.site = moonSite();
+    if (moon.mode === 'embedded') {
+      moon.x = s.x; moon.y = s.y; moon.vx = moon.vy = 0;
+    } else if (moon.mode === 'shaking') {
+      const k = Math.min(1, (nowMs - moon.t0) / 1000 / MOON.shakeTime);
+      const amp = 1.5 + 4.5 * k;
+      moon.x = s.x + (Math.random() - 0.5) * 2 * amp;
+      moon.y = s.y + (Math.random() - 0.5) * 2 * amp - k * 8;
+      if (Math.random() < 0.35) dust(s.x + (Math.random() - 0.5) * moon.r * 1.8, s.line, 1);
+      if (k >= 1) {
+        // Its spot in the sky is fixed on the page (it doesn't follow your scrolling).
+        // Park it in the empty margin right of the content if there's room, else by the right edge.
+        const W = viewW(), ce = contentEdges(), gutter = W - ce.right;
+        const skyX = gutter >= moon.r * 2 + 24 ? ce.right + gutter / 2 : W - moon.r - 12;
+        moon.sky = { x: skyX, y: s.line - MOON.rise };
+        moon.mode = 'sky'; moonEl.classList.add('up'); moon.vx = 0; moon.vy = -1100; moon.leavingGround = true;
+        dust(s.x, s.line, 24);
+        setNight(true);
+      }
+    } else if (moon.mode === 'sky') {
+      // springy: rises, overshoots a touch, settles
+      const tg = moon.sky, k = MOON.spring, c = 2 * Math.sqrt(k) * MOON.damping;
+      moon.vx += (k * (tg.x - moon.x) - c * moon.vx) * dt;
+      moon.vy += (k * (tg.y - moon.y) - c * moon.vy) * dt;
+      moon.x += moon.vx * dt; moon.y += moon.vy * dt;
+    } else if (moon.mode === 'falling') {
+      moon.vy += moon.fallDir * MOON.fallG * dt;
+      moon.x += (s.x - moon.x) * Math.min(1, dt * 5);
+      moon.y += moon.vy * dt;
+      if (moon.fallDir > 0 ? moon.y >= s.y : moon.y <= s.y) {
+        moon.x = s.x; moon.y = s.y; moon.vx = moon.vy = 0;
+        moon.mode = 'embedded';
+        moonImpact();
+      }
+    }
+    moonEl.style.transform = `translate3d(${(moon.x - moon.r).toFixed(1)}px, ${(moon.y - moon.r).toFixed(1)}px, 0)`;
+    // Hide the part below the divider (buried), flush with the line — only while it's in the
+    // ground, pulling out of it, or slamming into it.
+    let buried = Math.max(0, moon.y + moon.r - s.line);
+    if (moon.mode === 'sky') { if (buried === 0) moon.leavingGround = false; if (!moon.leavingGround) buried = 0; }
+    if (moon.mode === 'falling' && moon.fallDir < 0) buried = 0;
+    const clip = buried > 0 ? `inset(-150% -150% ${buried.toFixed(1)}px -150%)` : 'none';
+    if (clip !== moonEl.style.clipPath) moonEl.style.clipPath = clip;
+  }
+
+  function moonImpact() {
+    const s = moon.site;
+    moonDivider.classList.remove('impact'); void moonDivider.offsetWidth; moonDivider.classList.add('impact');
+    dust(s.x, s.line, 30);
+    // the shockwave hops nearby balls
+    for (const b of balls) {
+      if (heldBall === b) continue;
+      const dx = b.x - s.x, dy = b.y - s.line, d = Math.hypot(dx, dy);
+      if (d > 320) continue;
+      const k = 1 - d / 320;
+      b.vy -= 300 + 700 * k;
+      b.vx += Math.sign(dx || 1) * 350 * k;
+    }
+  }
+
+  function dropMoon() {
+    moon.mode = 'falling'; moonEl.classList.remove('up');
+    moon.fallDir = moon.site && moon.site.y < moon.y ? -1 : 1;
+    moon.vy = 0;
+    document.body.classList.remove('over-moon');
+    setNight(false);
+  }
+  moonEl.addEventListener('click', () => {
+    if (moon.mode === 'embedded') { moon.mode = 'shaking'; moon.t0 = nowMs; }
+    else if (moon.mode === 'sky') dropMoon();
+  });
+  // In the sky the moon sits behind the page content, so the content gets the clicks.
+  // Catch clicks (and hovers) that land on the moon by position instead.
+  function moonHit(clientX, clientY) {
+    if (moon.mode !== 'sky') return false;
+    const dx = clientX - moon.x, dy = clientY + window.scrollY - moon.y;
+    return dx * dx + dy * dy <= moon.r * moon.r;
+  }
+  document.addEventListener('click', e => {
+    if (moonEl.contains(e.target) || isUI(e.target) || e.target.closest('a, button, .ball, .peek')) return;
+    if (moonHit(e.clientX, e.clientY)) dropMoon();
+  });
+  window.addEventListener('pointermove', e => {
+    document.body.classList.toggle('over-moon', moonHit(e.clientX, e.clientY));
+  }, { passive: true });
+
+  // Balls bump into the crescent itself (not its hollow, and not the buried part).
+  function collideMoon(b) {
+    const R = moon.r;
+    if (Math.abs(b.x - moon.x) > R + P.radius || Math.abs(b.y - moon.y) > R + P.radius) return false;
+    const line = moon.mode === 'embedded' && moon.site ? moon.site.line : Infinity;
+    let top = false;
+    for (const c of CRESCENT) {
+      const cy = moon.y + c.y * R;
+      if (cy > line) continue;
+      if (collideCircle(b, { x: moon.x + c.x * R, y: cy, r: c.r * R })) top = true;
+    }
+    return top;
+  }
+
+  // ============================================================
+  // Night mode: the page background becomes a starry, nebulous sky and gravity switches off.
+  // Cheap by design: stars are painted once into three layers, and all the twinkling and
+  // drifting is CSS opacity/transform animation (no per-frame drawing).
+  // ============================================================
+  let zeroG = false;
+  const nightSky = document.getElementById('night-sky');
+  const starLayers = [...nightSky.querySelectorAll('canvas')];
+  const shootingEl = nightSky.querySelector('.shooting-star');
+  const STAR_TINTS = ['232,234,244', '247,217,138', '111,227,225', '165,150,242', '242,126,194'];
+  let skyPaintedFor = '', shootTimer = 0, hideTimer = 0;
+
+  function paintStars() {
+    const W = window.innerWidth, H = window.innerHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const key = `${W}x${H}@${dpr}`;
+    if (key === skyPaintedFor) return;
+    skyPaintedFor = key;
+    starLayers.forEach((cv, layer) => {
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      const g = cv.getContext('2d');
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const bright = layer === 2;
+      const count = Math.round(W * H / (bright ? 30000 : 8000));
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * W, y = Math.random() * H;
+        const tint = STAR_TINTS[Math.random() < 0.7 ? 0 : 1 + Math.floor(Math.random() * 4)];
+        const r = bright ? 1.1 + Math.random() : 0.4 + Math.random() * 0.8;
+        if (bright) {
+          g.fillStyle = `rgba(${tint},.12)`;
+          g.beginPath(); g.arc(x, y, r * 4, 0, Math.PI * 2); g.fill();
+          g.strokeStyle = `rgba(${tint},.55)`; g.lineWidth = 0.7;
+          const len = r * 4.5;
+          g.beginPath(); g.moveTo(x - len, y); g.lineTo(x + len, y); g.moveTo(x, y - len); g.lineTo(x, y + len); g.stroke();
+        }
+        g.fillStyle = `rgba(${tint},${bright ? 1 : (0.45 + Math.random() * 0.55).toFixed(2)})`;
+        g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      }
+    });
+  }
+
+  function scheduleShootingStar() {
+    clearTimeout(shootTimer);
+    shootTimer = setTimeout(() => {
+      if (!zeroG) return;
+      shootingEl.style.left = (window.innerWidth * (0.35 + Math.random() * 0.6)).toFixed(0) + 'px';
+      shootingEl.style.top = (window.innerHeight * Math.random() * 0.45).toFixed(0) + 'px';
+      shootingEl.classList.remove('go'); void shootingEl.offsetWidth; shootingEl.classList.add('go');
+      scheduleShootingStar();
+    }, 3000 + Math.random() * 5000);
+  }
+
+  function setNight(on) {
+    zeroG = on;
+    moonEl.classList.toggle('night', on);
+    moonDivider.classList.toggle('weightless', on); // the moon rocks float up
+    moonEl.setAttribute('aria-pressed', on);
+    moonEl.setAttribute('aria-label', on ? 'Drop the moon back down: normal gravity' : 'Pull the moon out: night sky and zero gravity');
+    clearTimeout(hideTimer);
+    if (on) {
+      paintStars();
+      nightSky.hidden = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => nightSky.classList.add('on')));
+      scheduleShootingStar();
+      // nudge everything so resting balls start to float
+      for (const b of balls) { b.vy -= 50 + Math.random() * 70; b.vx += (Math.random() - 0.5) * 80; }
+    } else {
+      nightSky.classList.remove('on');
+      clearTimeout(shootTimer);
+      hideTimer = setTimeout(() => { nightSky.hidden = true; }, 1700); // stop all its animations once faded
+    }
+  }
+  window.addEventListener('resize', () => { if (zeroG) paintStars(); });
+
+  // ============================================================
+  // Scoring
+  // ============================================================
+  function onBasket() {
+    netG.classList.remove('swish'); void netG.getBBox(); netG.classList.add('swish');
+    popEl.classList.remove('go'); void popEl.offsetWidth; popEl.classList.add('go');
+    ScoreStore.increment(); // the subscription below updates the number (instantly, then confirmed)
+  }
+  function showCount(n) { countEl.textContent = n == null ? '—' : n.toLocaleString(); }
+  ScoreStore.subscribe(showCount);
+
+  // ============================================================
+  // Footer
+  // ============================================================
+  document.getElementById('back-to-top').addEventListener('click', e => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // ============================================================
+  // Ball lab (playground controls)
+  // ============================================================
+  const lab = document.getElementById('lab');
+  lab.querySelector('.lab-toggle').addEventListener('click', () => lab.classList.toggle('open'));
+
+  const SLIDERS = [
+    ['gravity',      'Gravity',          500, 5000, 50,   v => Math.round(v)],
+    ['bounce',       'Bounciness',       0,   0.95, 0.01, v => v.toFixed(2)],
+    ['rollFriction', 'Rolling friction', 0,   6,    0.1,  v => v.toFixed(1)],
+    ['airDrag',      'Air drag',         0,   1,    0.01, v => v.toFixed(2)],
+    ['radius',       'Ball size',        10,  40,   1,    v => Math.round(v) + 'px'],
+  ];
+  const sliderBox = document.getElementById('lab-sliders');
+  const sliderInputs = {};
+  for (const [key, label, min, max, stepv, fmt] of SLIDERS) {
+    const row = document.createElement('label');
+    const val = document.createElement('span');
+    const input = document.createElement('input');
+    Object.assign(input, { type: 'range', min, max, step: stepv, value: P[key] });
+    row.append(label, val, input);
+    sliderBox.append(row);
+    const sync = () => { val.textContent = fmt(P[key]); };
+    input.addEventListener('input', () => {
+      P[key] = parseFloat(input.value);
+      sync();
+      if (key === 'radius') { applySize(); clampToBounds(); }
+      saveP();
+    });
+    sliderInputs[key] = { input, sync };
+    sync();
+  }
+  function saveP() { try { localStorage.setItem('ballLab.physics', JSON.stringify(P)); } catch {} }
+
+  document.getElementById('btn-drop').addEventListener('click', dropIn);
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    for (const b of balls.slice()) if (!b.starter) removeBall(b, 'fade-out');
+  });
+  const dbgBtn = document.getElementById('btn-debug');
+  dbgBtn.addEventListener('click', () => {
+    debugOn = !debugOn;
+    dbgBtn.classList.toggle('on', debugOn);
+    dbgBtn.textContent = debugOn ? 'Hide colliders' : 'Show colliders';
+  });
+  document.getElementById('btn-defaults').addEventListener('click', () => {
+    Object.assign(P, DEFAULTS);
+    for (const k in sliderInputs) { sliderInputs[k].input.value = P[k]; sliderInputs[k].sync(); }
+    applySize(); saveP();
+  });
+
+  // ============================================================
+  // Go
+  // ============================================================
+
+  // Handy for poking at things from the dev console: ballLab.balls, ballLab.P, ...
+  window.ballLab = {
+    balls, P, step, measure, dropIn, makeBall, randomBallColor, setTool, setNight, pulses, pointer,
+    get zeroG() { return zeroG; }, get sling() { return sling; }, moon, updateMoon,
+    startSlingAt(b, x, y) { sling = { ball: b, id: -1, ax: x, ay: y + window.scrollY }; pointer.x = x; pointer.y = y; },
+    startAimAt(b, x, y) { aim = { ball: b, id: -1 }; pointer.x = x; pointer.y = y; },
+    releaseAim, endPointer() { aim = null; sling = null; },
+    get platforms() { return platforms; }, get hoop() { return hoop; },
+    get box() { return box; }, get groundY() { return groundY; },
+  };
+
+  measure();
+  requestAnimationFrame(frame);
+  // Toss the starter in once the hero photo has risen, but only when the first platform
+  // (top of the intro) is actually on screen — on short screens that waits until the
+  // visitor scrolls it into view. Also waits for a real layout (a background tab can
+  // report a 0-width viewport).
+  function platformInView() {
+    measure();
+    const p = platforms[0];
+    if (!p) return true;
+    const top = p.top - window.scrollY;
+    return top > 80 && top < viewH() - 10;
+  }
+  const start = () => setTimeout(function tryDrop() {
+    if (viewW() < 100 || viewH() < 100 || !platformInView()) return setTimeout(tryDrop, 250);
+    if (!balls.some(b => b.starter)) dropIn();
+  }, 1200);
+  if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
+})();
+</script>
 </body>
 </html>
